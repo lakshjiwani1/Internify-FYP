@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h2>Sign up</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <!-- {% for field in form %}
+            <p>
+                {{ field.label_tag }}<br>
+                {{ field }}
+                {% for error in field.errors %}
+                    <p style="color: red">{{ error }}</p>
+                {% endfor %}
+            </p>
+        {% endfor %} -->
+        <label for="{{ form.first_name.id_for_label }}">First Name:</label>
+    {{ form.first_name }}
+    <br>
+
+    <label for="{{ form.last_name.id_for_label }}">Last Name:</label>
+    {{ form.last_name }}
+    <br>
+
+    <label for="{{ form.email.id_for_label }}">Email Address:</label>
+    {{ form.email }}
+    <br>
+
+    <label for="{{ form.username.id_for_label }}">Username:</label>
+    {{ form.username }}
+    <br>
+
+    <label for="{{ form.password1.id_for_label }}">Password:</label>
+    {{ form.password1 }}
+    <br>
+
+    <label for="{{ form.password2.id_for_label }}">Confirm Password:</label>
+    {{ form.password2 }}
+    <br>
+
+    <button type="submit">Sign Up</button>
+    </form>
+</body>
+</html>
