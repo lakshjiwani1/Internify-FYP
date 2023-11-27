@@ -9,7 +9,11 @@
     <h1>Welcome to Internify!</h1>
     {% if user.is_authenticated %}
         <h2>
-        Hi {{ user.first_name }}!
+        {% if user.student.first_name %}
+            Hi {{ user.student.first_name }}!
+        {% else %}
+            Hi there!
+        {% endif %}
         </h2>
         <br>
         <a href="/signout">Logout</a>

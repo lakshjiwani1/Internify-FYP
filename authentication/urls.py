@@ -10,4 +10,7 @@ urlpatterns = [
     path('signup/success/', views.signup_success, name='signup_success'),
     path('activate/<uidb64>/<token>', views.activate, name='activate'),
     path('signout/', views.signout, name='signout'),
+    path('register/company', views.company_registration, name='company_registration'),
+    path('register/success', views.company_reg_success, name='register_success'),
+    # path('signin/company/', views.company_signin, name='company_signin'),
 ]

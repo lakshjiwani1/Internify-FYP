@@ -3,39 +3,59 @@ from django.shortcuts import redirect, render
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth import authenticate, login, logout, get_user_model
-# from django.contrib.auth.models import User
+from django.contrib.auth.models import User
 from django import forms
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
-from django.core.mail import send_mail
+# from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from django.utils.html import strip_tags
+# from django.utils.html import strip_tags
 from django.contrib import messages
 from django.core.mail import EmailMessage
 from .tokens import account_activation_token
 from django.utils.encoding import force_bytes, force_str
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import Http404
-# Create your views here.
+from .forms import CompanyRegistrationForm, CompanySignInForm
+from .models import CompanyAuth, Student, CustomUser
+# from django.contrib.auth.hashers import make_password
+# from django.contrib.auth.hashers import check_password
 
 
 class CustomUserCreationForm(UserCreationForm):
     first_name = forms.CharField(max_length=30, label='First Name', widget=forms.TextInput(attrs={'placeholder': 'First Name', 'autofocus':True}))
     last_name = forms.CharField(max_length=30, label='Last Name', widget=forms.TextInput(attrs={'placeholder': 'Last Name'}))
-    email = forms.EmailField(label='Email Address', widget=forms.TextInput(attrs={'placeholder': 'Email Address'}))
-    username = forms.CharField(max_length=30, label='Username', widget=forms.TextInput(attrs={'placeholder': 'Username'}))
+    email = forms.EmailField(label='Email Address', widget=forms.TextInput(attrs={'placeholder': 'Email Address'}),
+                             error_messages={
+                                    'unique': 'This email is already in use. Please choose a different one.',}
+                            )
+    username = forms.CharField(max_length=30, 
+                               label='Username', 
+                               widget=forms.TextInput(attrs={'placeholder': 'Username'}),
+                               error_messages={
+                                    'unique': 'This username is already in use. Please choose a different one.',}
+                                )
     
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput(attrs={'placeholder': 'Password'}))
     password2 = forms.CharField(label='Confirm Password', widget=forms.PasswordInput(attrs={'placeholder': 'Confirm Password'}))
 
-    def clean_email(self):
-        email = self.cleaned_data['email'].lower()
-        User = get_user_model()
-        if User.objects.filter(email=email).exists():
+    def clean(self):
+        cleaned_data = super().clean()
+        email = cleaned_data.get('email')
+        # username = cleaned_data.get('username')
+
+        if Student.objects.filter(email=email).exists():
+            print("email exists")
             raise forms.ValidationError("This email address is already in use.")
-        return email
+
+        return cleaned_data
+
+    class Meta:
+        model = get_user_model()
+        fields = ['email', 'username', 'password1', 'password2', 'first_name', 'last_name']
+
 
 def activate(request, uidb64, token):
     # print(f"Raw UID: {uidb64}, Raw Token: {token}")
@@ -92,38 +112,44 @@ def activate_email(request, user, to_email):
 def signup(request):
     if request.user.is_authenticated:
         return redirect('/')
+
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
+            print(form.cleaned_data)
             try:
-                user = form.save(commit=False)
-                user.is_active = False
-                user.email = form.cleaned_data.get('email')
-                user.first_name = form.cleaned_data.get('first_name')
-                user.last_name = form.cleaned_data.get('last_name')
-                user.save()
-                error_messages = activate_email(request, user, form.cleaned_data.get('email'))
-                if not error_messages:
-                    return redirect(signup_success)
-                else:
-                    user.delete()
-                    return render(request, 'authentication/signup.html', {'form': form, 'error_messages': error_messages})
-                    # return redirect(signup_success)
-                # activate_email(request, user, form.cleaned_data.get('email'))
-                # login(request, user)
-                # return redirect(signup_success)
-                # return render(request, 'authentication/signup.html', {'form': form})
-            except (ValidationError, IntegrityError) as e:
-                # Handle validation or integrity errors
+                with transaction.atomic():
+                    user = form.save(commit=False)
+                    user.is_active = False
+                    user.user_type = 1  # Assuming 1 is for students
+                    user.save()
+
+                    student = Student.objects.create(
+                        user=user,
+                        first_name=form.cleaned_data.get('first_name'),
+                        last_name=form.cleaned_data.get('last_name'),
+                        email=form.cleaned_data.get('email')
+                    )
+
+                    # error_messages = activate_email(request, user, form.cleaned_data.get('email'))
+                    error_messages = activate_email(request, user, form.cleaned_data.get('email'))
+
+                    if not error_messages:
+                        return redirect(signup_success)
+                    else:
+                        raise ValidationError("Error activating email")  # Trigger rollback
+
+            except (ValidationError, IntegrityError):
                 messages.error(request, 'Error processing your request. Please try again.')
-                
+
         else:
             messages.error(request, 'Invalid form submission. Please check the form.')
-            # print(form.errors)
-            return render(request, 'authentication/signup.html', {'form': form})
+
     else:
         form = CustomUserCreationForm()
-        return render(request, 'authentication/signup.html', {'form': form})
+
+    return render(request, 'authentication/signup.html', {'form': form})
+
 
 def signup_success(request):
     return render(request, 'authentication/signup_success.html')
@@ -137,9 +163,12 @@ def signin(request):
         return render(request, 'authentication/home.html')
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
+        print(f"Form is Valid: {form.is_valid}")
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
+            print(username)
+            print(password)
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
@@ -160,3 +189,73 @@ def profile(request):
 def signout(request):
     logout(request)
     return redirect('/signin')
+
+
+def company_registration(request):
+    error_messages = []
+    if request.method == 'POST':
+        form = CompanyRegistrationForm(request.POST)
+        
+        if form.is_valid():
+            print(form.cleaned_data)
+            try:
+                with transaction.atomic():
+                    user = form.save(commit=False)
+                    user.is_active = False
+                    user.user_type = 2
+                    # user.email = form.cleaned_data.get('email')
+                    user.save()
+
+                    company = CompanyAuth.objects.create(
+                        user=user,
+                        name=form.cleaned_data.get('name'),
+                        contact_number=form.cleaned_data.get('contact_number'),
+                        tax_id=form.cleaned_data.get('tax_id'),
+                        address=form.cleaned_data.get('address'),
+                        industry_type=form.cleaned_data.get('industry_type'),
+                        website_url=form.cleaned_data.get('website_url'),
+                        description=form.cleaned_data.get('description'),
+                        email = form.cleaned_data.get('email')
+                    )
+
+                    return redirect(company_reg_success)
+            except ValidationError as e:
+                # error_messages.append(f'Validation Error')
+                raise forms.ValidationError("Validation Error")
+        else:
+            # error_messages.append("Invalid Form Submission")
+            # raise forms.ValidationError("Validation Error")
+            return render(request, 'authentication/company_registration.html', {'form': form, 'error_messages': error_messages})
+    else:
+        form = CompanyRegistrationForm()
+
+    return render(request, 'authentication/company_registration.html', {'form': form})
+
+
+def company_reg_success(request):
+    return render(request, 'authentication/company_reg_success.html')
+
+# def company_signin(request):
+#     error_messages = []
+#     if request.method == 'POST':
+#         form = CompanySignInForm(request.POST)
+#         if form.is_valid():
+#             username = form.cleaned_data['username']
+#             password = form.cleaned_data['password']
+#             print(f"Attempting to authenticate with Email: {email}, Password: {password}")
+#             company = authenticate(request, email=email, password=password)
+#             print(f"Company status: {company}")
+#             if company is not None:
+#                 login(request, company)
+#                 return redirect("company_dashboard")
+#             else:
+#                 error_messages.append("Invalid email or password.")
+#         else:
+#             error_messages.append("Invalid Form Submission")
+#     else:
+#         form = CompanySignInForm()
+
+#     return render(request, 'authentication/company_signin.html', {'form': form, 'error_messages': error_messages})
+
+def company_dashboard(request):
+    return render(request, 'authentication/company_dashboard.html')
