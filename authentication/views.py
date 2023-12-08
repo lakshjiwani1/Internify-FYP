@@ -18,7 +18,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.http import Http404
-from .forms import CompanyRegistrationForm, CompanySignInForm
+from .forms import CompanyRegistrationForm, CompanySignInForm, StudentUpdateForm
 from .models import CompanyAuth, Student, CustomUser
 # from django.contrib.auth.hashers import make_password
 # from django.contrib.auth.hashers import check_password
@@ -183,7 +183,39 @@ def signin(request):
     
 
 def profile(request):
-    return render(request, 'authentication/profile.html')
+    user = request.user
+
+    if user.user_type == 1:  # Assuming 1 is the user_type for students
+        student = user.student
+
+        if request.method == 'POST':
+            form = StudentUpdateForm(request.POST, request.FILES, instance=student)
+            if form.is_valid():
+                form.save()
+                # Redirect or do something else after successful update
+                return redirect('profile')  # Redirect to the profile page or wherever you want
+        else:
+            form = StudentUpdateForm(instance=student)
+
+        return render(request, 'authentication/profile.html', {'form': form, 'student': student})
+    
+    elif user.user_type == 2:  # Assuming 2 is the user_type for companies
+        company = user.companyauth  # Assuming this is how your company is linked to the user
+
+        # if request.method == 'POST':
+        #     form = CompanyUpdateForm(request.POST, request.FILES, instance=company)
+        #     if form.is_valid():
+        #         form.save()
+        #         # Redirect or do something else after successful update
+        #         return redirect('profile')  # Redirect to the profile page or wherever you want
+        # else:
+        #     form = CompanyUpdateForm(instance=company)
+
+        return render(request, 'authentication/company_profile.html')
+    
+    else:
+        # Handle other user types or scenarios
+        return redirect('home')  # Redirect to the home page
 
 
 def signout(request):

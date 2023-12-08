@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.contrib.auth.hashers import make_password
 from django.utils import timezone
 from django.conf import settings
+import os
 
 
 # Create your models here.
@@ -14,9 +15,29 @@ class Student(models.Model):
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     email = models.EmailField(unique=True)
+    profile_picture = models.ImageField(upload_to='student_profile_pics/', null=True, blank=True)
+    cv_file = models.FileField(upload_to='student_cvs/', null=True, blank=True)
+    
 
     def __str__(self):
         return self.user.username
+    
+    # def save(self, *args, **kwargs):
+    #     # Auto rename profile picture
+    #     if self.profile_picture:
+    #         self.profile_picture.name = self.generate_filename('profile_picture', self.profile_picture.name)
+
+    #     # Auto rename CV file
+    #     if self.cv_file:
+    #         self.cv_file.name = self.generate_filename('cv_file', self.cv_file.name)
+
+    #     super().save(*args, **kwargs)
+
+    # def generate_filename(self, field_name, original_filename):
+    #     username = self.user.username
+    #     count = Student.objects.filter(user=self.user).count() + 1
+    #     base, ext = os.path.splitext(original_filename)
+    #     return f'{username}_{field_name}_{count}{ext}'
 
 
 
@@ -35,9 +56,6 @@ class CompanyAuth(models.Model):
     def __str__(self):
         return self.user.username
     
-
-
-
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, user_type, password=None, **extra_fields):
