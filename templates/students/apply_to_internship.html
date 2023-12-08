@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply to Internship</title>
+</head>
+<body>
+    {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+    <h1>Apply to {{ internship.title }}</h1>
+
+    <form method="post" action="{% url 'apply_to_internship' internship_id=internship.id %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <!-- <label for="cv_file">Upload CV:</label> -->
+        <!-- <input type="file" name="cv_file" accept=".pdf,.doc,.docx"> -->
+        <p>Company Name: {{internship.company.name}}</p>
+        <!-- <p> Title: {{ internship.title }} </p> -->
+        <p> Start Date: {{internship.start_date}} </p>
+        <p> End Date: {{internship.end_date}} </p>
+        <p> Location: {{internship.location}} </p>
+        <p> Required Skills: {{internship.required_skills}} </p>
+        <p>Qualifications: {{internship.qualifications}} </p>
+        <p>Application Deadline: {{internship.application_deadline}} </p>
+        <p>
+            {% if internship.accept_applications %}
+                <button type="submit">Apply</button>
+            {% else %}
+                <p>Company is not accepting applications at the moment</p>
+            {% endif %}
+        </p>
+        
+    </form>
+</body>
+</html>

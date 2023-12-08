@@ -4,6 +4,8 @@ from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
+from .models import Student
+
 
 class ContactNumberField(forms.CharField):
     def clean(self, value):
@@ -86,6 +88,16 @@ class CompanyRegistrationForm(UserCreationForm):
     #         raise forms.ValidationError("This username is already in use.")
     #     return username
     
+
+class StudentUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Student
+        fields = ['profile_picture', 'cv_file']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['profile_picture'].widget.attrs['accept'] = 'image/*'
+        self.fields['cv_file'].widget.attrs['accept'] = '.pdf, .doc, .docx'
 
 class CompanySignInForm(forms.Form):
     email = forms.EmailField()
