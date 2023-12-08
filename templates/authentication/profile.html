@@ -15,8 +15,40 @@
             Hi there!
         {% endif %}
         </h2>
+        
+        <!-- Display current profile picture -->
+        {% if student.profile_picture %}
+            <img src="{{ student.profile_picture.url }}" alt="Profile Picture">
+        {% else %}
+            <p>No profile picture uploaded.</p>
+        {% endif %}
+        
+        <!-- Button to upload profile picture -->
+        <form method="post" action="{% url 'profile' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="profile_picture" accept="image/*">
+            <button type="submit">Upload Profile Picture</button>
+        </form>
+
+
+        <!-- Display current CV -->
+        {% if student.cv_file %}
+            <p>CV uploaded: <a href="{{ student.cv_file.url }}" target="_blank">View CV</a></p>
+        {% else %}
+            <p>No CV uploaded.</p>
+        {% endif %}
+
+        <!-- Button to upload CV directly in the profile page -->
+        <form method="post" action="{% url 'profile' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="cv_file" accept=".pdf, .doc, .docx">
+            <button type="submit">Upload CV</button>
+        </form>
+        
         <br>
+        
         <a href="/signout">Logout</a>
+        
     {% else %}
         <a href="/signin">Login</a>
         <a href="/signup">Signup</a>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Applications</title>
+</head>
+<body>
+    <!-- your_template.html -->
+    <h1>Applications</h1>
+
+    {% if applications %}
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Student Username</th>
+                <th>Student Name</th>
+                <th>Student Email</th>
+                <th>CV</th>
+                <!-- Add more headers as needed -->
+            </tr>
+        </thead>
+        <tbody>
+            {% for application in applications %}
+                <tr>
+                    <td>{{ application.student.user.username }}</td>
+                    <td>{{ application.student.first_name }} {{ application.student.last_name }}</td>
+                    <td>{{ application.student.email }}</td>
+                    <td><a href="{{ application.cv_file.url }}" target="_blank">View CV</a></td>
+                    <!-- Add more cells as needed -->
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No applications available.</p>
+{% endif %}
+
+</body>
+</html>
