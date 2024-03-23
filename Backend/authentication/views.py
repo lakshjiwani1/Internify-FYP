@@ -22,7 +22,7 @@ from django.http import Http404, HttpResponseNotAllowed, JsonResponse, QueryDict
 from .forms import CompanyRegistrationForm, CompanySignInForm, StudentUpdateForm
 from .models import CompanyAuth, Student, CustomUser
 # from django.contrib.auth.hashers import make_password
-# from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import check_password
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.middleware.csrf import get_token
 from django.http import JsonResponse
@@ -63,7 +63,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.set_unusable_password()
+        # user.set_unusable_password()
         if commit:
             user.save()
         return user
@@ -238,8 +238,8 @@ def get_user_information(username):
 
 @csrf_exempt
 def signin(request):
-    # if request.user.is_authenticated:
-    #     return JsonResponse({'success': True, 'redirect': '/'})
+    if request.user.is_authenticated:
+        return JsonResponse({'success': True, 'redirect': '/'})
     
     if request.method == 'POST':
         try:
@@ -262,6 +262,7 @@ def signin(request):
             return JsonResponse({'success': False, 'error': 'Username or password is missing'})
 
         user = authenticate(request, username=username, password=password)
+        
         print(f"User: {user}")
 
         if user is not None:
@@ -285,8 +286,7 @@ def profile(request):
             form = StudentUpdateForm(request.POST, request.FILES, instance=student)
             if form.is_valid():
                 form.save()
-                # Redirect or do something else after successful update
-                return redirect('profile')  # Redirect to the profile page or wherever you want
+                return redirect('profile')  
         else:
             form = StudentUpdateForm(instance=student)
 
