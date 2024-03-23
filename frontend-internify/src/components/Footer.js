@@ -1,26 +1,3 @@
-// import React from 'react';
-// import { Box, Typography } from '@mui/material';
-
-// function Footer() {
-//   return (
-//     <Box
-//       sx={{
-//         // backgroundColor: 'rgba(0, 0, 0, 0.1)',
-//         backgroundColor: '#F53855',
-//         padding: '100px',
-//         textAlign: 'center',
-//         marginTop: '20px',
-//       }}
-//     >
-//       <Typography variant="body2" color="white">
-//         © {new Date().getFullYear()} Internify. All rights reserved.
-//       </Typography>
-//     </Box>
-//   );
-// }
-
-// export default Footer;
-
 import React from 'react';
 import { Box, Container, Grid, Link, Typography } from '@mui/material';
 import footerImage from '../assets/logo-white.png';
@@ -37,6 +14,7 @@ const Footer = () => {
         justifyContent: 'center',
         // paddingBottom: 20,
         color: 'white',
+        marginTop: 10,
       }}
     >
       <Container maxWidth="lg">

@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Card, CardContent } from '@mui/material';
+import { Container, Typography, Card, CardContent, Box, TextField, Button } from '@mui/material';
 
 const Internship = () => {
   const [internships, setInternships] = useState([]);
+    const [searchText, setSearchText] = useState('');
+  const [filteredInternships, setFilteredInternships] = useState([]);
 
+  const handleSearch = () => {
+    const filtered = internships.filter((internship) =>
+      internship.fields.title.toLowerCase().includes(searchText.toLowerCase())
+    );
+    setFilteredInternships(filtered);
+  };
+  
   useEffect(() => {
     // Fetch data from Django backend
     const fetchData = async () => {
@@ -26,44 +35,69 @@ const Internship = () => {
   }, []); // Empty dependency array to ensure the effect runs only once on component mount
 
   return (
-    <Container>
-      <Typography variant="h4" gutterBottom>
-        Internships Posted
+    <Container maxWidth="lg">
+      <Typography variant="h4" sx={{ textAlign: 'center', marginTop: 4, marginBottom: 2 }}>
+        Internships
       </Typography>
-      {internships.map((internship) => (
-        <Card key={internship.pk} sx={{ marginBottom: 2 }}>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
+
+
+      <Box sx={{ width: '80%', margin: 'auto', marginBottom: 2 }}>
+        <TextField
+          label="Search Internships"
+          variant="outlined"
+          size="small"
+          sx={{ width: '70%', marginRight: 2 }}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+        />
+        <Button variant="contained" color="primary" size="medium" onClick={handleSearch}>
+          Search
+        </Button>
+      </Box>
+
+      <Box sx={{ width: '80%', margin: 'auto' }}>
+        {(searchText ? filteredInternships : internships).map((internship) => (
+          <Box key={internship.pk} sx={{ width: '100%', marginBottom: 2 }}>
+            <Card>
+              <CardContent>
+              <Typography variant="h6" gutterBottom>
               {internship.fields.title}
             </Typography>
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="body2" color="textPrimary">
               Company Name: {internship.fields.company.name}
             </Typography>
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="body2" color="textPrimary">
               Start Date: {internship.fields.start_date}
             </Typography>
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="body2" color="textPrimary">
               End Date: {internship.fields.end_date}
             </Typography>
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="body2" color="textPrimary">
               Location: {internship.fields.location}
             </Typography>
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="body2" color="textPrimary">
               Required Skills: {internship.fields.required_skills}
             </Typography>
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="body2" color="textPrimary">
               Qualifications: {internship.fields.qualifications}
             </Typography>
-            <Typography variant="body2" color="textSecondary">
+            <Typography variant="body2" color="textPrimary">
               Application Deadline: {internship.fields.application_deadline}
             </Typography>
-            <Typography variant="body2" color="textSecondary">
+            {/* <Typography variant="body2" color="textPrimary">
               {internship.fields.accept_applications ? 'Company is accepting applications' : 'Company is not accepting applications at the moment'}
-            </Typography>
-            {/* Add more internship details as needed */}
-          </CardContent>
-        </Card>
-      ))}
+            </Typography> */}
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+                  <Button variant="contained" size="small">
+                    Apply
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+        ))}
+      </Box>
+
     </Container>
   );
 };

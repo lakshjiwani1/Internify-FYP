@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { AppBar, Button, Divider, Drawer, Hidden, IconButton, Toolbar, Typography, List, ListItem, ListItemText } from '@mui/material';
+import { AppBar, Button, Divider, Drawer, Hidden, IconButton, Toolbar, Typography, List, ListItem, ListItemText, Menu, MenuItem } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import logo from "../assets/logo-no-background.png";
-import { NavItem}  from "../misc/MUIComponent";
+import { NavItem } from "../misc/MUIComponent";
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 function Navigationbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
   const location = useLocation();
+  const isAuthenticated = false; 
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
   };
 
   const navigationLinks = [
@@ -22,8 +33,9 @@ function Navigationbar() {
   ];
 
   const authLinks = [
-    { text: 'Log In', to: '/login' },
-    { text: 'Sign Up', to: '/signup' },
+    { text: 'Settings', to: '/settings' },
+    { text: 'My Applications', to: '/applications' },
+    { text: 'Log Out', to: '/logout' },
   ];
 
   const drawerContent = (
@@ -96,47 +108,86 @@ function Navigationbar() {
           </Hidden>
 
           <Hidden smDown>
-            {/* Log In and Sign Up buttons for tablet and desktop screens */}
-            <Button
-              color="inherit"
-              component={NavItem}
-              to="/login"
-              sx={{
-                marginRight: 3,
-                marginLeft: 5,
-                fontWeight: 500,
-                borderRadius: 10,
-                textTransform: 'none',
-                fontSize: "1.2rem",
-                color: "#4F5665",
-                '&:hover': {
-                  backgroundColor: "white",
-                },
-              }}
-            >
-              Log In
-            </Button>
-            <Button
-              variant='outlined'
-              color="inherit"
-              component={NavItem}
-              to="/signup"
-              sx={{
-                width: "7rem",
-                marginRight: 2,
-                color: "white",
-                backgroundColor: "#F53855",
-                borderRadius: 10,
-                textTransform: 'none',
-                fontWeight: 500,
-                '&:hover': {
-                  backgroundColor: "white",
-                  color: "#F53855",
-                },
-              }}
-            >
-              Sign Up
-            </Button>
+            {isAuthenticated ? (
+              // User dropdown menu for tablet and desktop screens if authenticated
+              <>
+                <IconButton
+                  aria-label="account of current user"
+                  aria-controls="menu-appbar"
+                  aria-haspopup="true"
+                  onClick={handleMenuOpen}
+                  color="inherit"
+                  sx={{marginLeft: 5}}
+                >
+                  <AccountCircleIcon fontSize='large' />
+                </IconButton>
+                <Menu
+                  id="menu-appbar"
+                  anchorEl={anchorEl}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                  }}
+                  keepMounted
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                  }}
+                  open={Boolean(anchorEl)}
+                  onClose={handleMenuClose}
+                >
+                  {authLinks.map((link, index) => (
+                    <MenuItem key={index} component={NavItem} to={link.to} onClick={handleMenuClose}>
+                      {link.text}
+                    </MenuItem>
+                  ))}
+                </Menu>
+              </>
+            ) : (
+              // Log In and Sign Up buttons for tablet and desktop screens if not authenticated
+              <>
+                <Button
+                  color="inherit"
+                  component={NavItem}
+                  to="/login"
+                  sx={{
+                    marginRight: 3,
+                    marginLeft: 5,
+                    fontWeight: 500,
+                    borderRadius: 10,
+                    textTransform: 'none',
+                    fontSize: "1.2rem",
+                    color: "#4F5665",
+                    '&:hover': {
+                      backgroundColor: "white",
+                    },
+                  }}
+                >
+                  Log In
+                </Button>
+                <Button
+                  variant='outlined'
+                  color="inherit"
+                  component={NavItem}
+                  to="/signup"
+                  sx={{
+                    width: "7rem",
+                    marginRight: 2,
+                    color: "white",
+                    backgroundColor: "#F53855",
+                    borderRadius: 10,
+                    textTransform: 'none',
+                    fontWeight: 500,
+                    '&:hover': {
+                      backgroundColor: "white",
+                      color: "#F53855",
+                    },
+                  }}
+                >
+                  Sign Up
+                </Button>
+              </>
+            )}
           </Hidden>
         </Toolbar>
       </AppBar>
@@ -144,6 +195,5 @@ function Navigationbar() {
     </>
   );
 }
-
 
 export default Navigationbar;

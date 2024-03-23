@@ -67,7 +67,7 @@ const SignupForm = () => {
                     <Box>
                         <Typography variant="body1" sx={{ marginLeft: '9rem', marginBottom: '1rem' }}>
                             If you already have an account registered You can{' '}
-                            <Link to="/elogin" sx={{ color: '#F53855' }}>
+                            <Link to="/login" sx={{ color: '#F53855' }}>
                                 Login here.
                             </Link>
                         </Typography>
