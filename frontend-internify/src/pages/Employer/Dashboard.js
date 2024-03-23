@@ -1,24 +1,36 @@
-import React from 'react';
-import { Button, Grid, Paper, Typography, Box, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import React, { useState } from 'react';
+import { Button, Grid, Paper, Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { AddCircleOutline, MoreVert, Edit, Delete } from '@mui/icons-material';
 import { useTheme } from '@mui/system';
 import { Link } from 'react-router-dom';
 
 const EmployerDashboard = () => {
     const theme = useTheme();
-    const [anchorEl, setAnchorEl] = React.useState(null);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [activeButton, setActiveButton] = useState('posted');
     const open = Boolean(anchorEl);
+
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
     };
+
     const handleClose = () => {
         setAnchorEl(null);
     };
 
-    const jobs = [
+    const jobsPosted = [
         { id: 1, title: 'IT Intern', applicants: 20 },
         { id: 2, title: 'Finance Intern', applicants: 15 },
     ];
+
+    const jobsClosed = [
+        { id: 3, title: 'Marketing Intern', applicants: 10 },
+        { id: 4, title: 'HR Intern', applicants: 8 },
+    ];
+
+    const handleButtonClick = (button) => {
+        setActiveButton(button);
+    };
 
     return (
         <Grid container spacing={2} sx={{ width: '80%', margin: 'auto' }}>
@@ -27,14 +39,16 @@ const EmployerDashboard = () => {
             </Grid>
             <Grid item xs={12} md={6}>
                 <Button
-                    variant="contained"
-                    sx={{ backgroundColor: theme.palette.primary.main, color: 'white', marginBottom: '1rem', marginRight: '1rem', textTransform: 'none', }}
+                    variant={activeButton === 'posted' ? 'outlined' : 'contained'}
+                    sx={{ marginBottom: '1rem', marginRight: '1rem', textTransform: 'none' }}
+                    onClick={() => handleButtonClick('posted')}
                 >
                     Internships Posted
                 </Button>
                 <Button
-                    variant="outlined"
+                    variant={activeButton === 'closed' ? 'outlined' : 'contained'}
                     sx={{ textTransform: 'none', marginBottom: '1rem' }}
+                    onClick={() => handleButtonClick('closed')}
                 >
                     Closed Internships
                 </Button>
@@ -44,7 +58,7 @@ const EmployerDashboard = () => {
                     <Button
                         startIcon={<AddCircleOutline />}
                         variant="contained"
-                        sx={{ backgroundColor: theme.palette.primary.main, color: 'white', textTransform: 'none' }}
+                        sx={{ textTransform: 'none' }}
                     >
                         Post Internship
                     </Button>
@@ -61,7 +75,38 @@ const EmployerDashboard = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {jobs.map((job) => (
+                            {activeButton === 'posted' && jobsPosted.map((job) => (
+                                <TableRow key={job.id}>
+                                    <TableCell>{job.title}</TableCell>
+                                    <TableCell>{job.applicants}</TableCell>
+                                    <TableCell>
+                                        <IconButton size="small" onClick={handleClick}>
+                                            <MoreVert />
+                                        </IconButton>
+                                        <Menu
+                                            id={`job-menu-${job.id}`}
+                                            anchorEl={anchorEl}
+                                            keepMounted
+                                            open={open}
+                                            onClose={handleClose}
+                                        >
+                                            <MenuItem onClick={handleClose}>
+                                                <ListItemIcon>
+                                                    <Edit fontSize="small" />
+                                                </ListItemIcon>
+                                                <ListItemText>Edit Internship</ListItemText>
+                                            </MenuItem>
+                                            <MenuItem onClick={handleClose}>
+                                                <ListItemIcon>
+                                                    <Delete fontSize="small" />
+                                                </ListItemIcon>
+                                                <ListItemText>Delete Internship</ListItemText>
+                                            </MenuItem>
+                                        </Menu>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                            {activeButton === 'closed' && jobsClosed.map((job) => (
                                 <TableRow key={job.id}>
                                     <TableCell>{job.title}</TableCell>
                                     <TableCell>{job.applicants}</TableCell>

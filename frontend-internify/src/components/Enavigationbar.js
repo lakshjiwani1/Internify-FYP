@@ -27,7 +27,7 @@ const EmployerNavigationbar = () => {
             variant='outlined'
             color="inherit"
             component={NavItem}
-            to="/elogin"
+            to="/login"
             sx={{
               width: "7rem",
               marginRight: 2,
