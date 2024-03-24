@@ -21,32 +21,48 @@ const PostInternshipPage = () => {
             published: 'no',
             acceptingApplication: 'no',
         },
-        onSubmit: async values => {
-            // Handle form submission logic here
-            console.log(values);
+        // onSubmit: async values => {
+        //     // Handle form submission logic here
+        //     console.log(values);
 
-            try{
-                const response = await axios.post('http://127.0.0.1:8000/signup/', values);
-                console.log('Signup Response:', response.data);
+        //     try{
+        //         const response = await axios.post('http://127.0.0.1:8000/create_internship/', values);
+        //         console.log('Internship Response:', response.data);
+
+        //         if (response.status === 201) {
+        //             console.log('Internship Posted Successfully')
+        //             navigate('/')
+        //         }
+        //         else {
+        //             console.error('Internship Posting failed:', response.data.error);
+        //             console.log('status: ', response.status)
+        //             console.log('values: ', values)
+        //         }
+        //     }
+        //     catch (error) {
+        //         console.error('API Error:', error);
+        //         // Handle signup error (e.g., network error)
+        //         // You might want to set a state to display an error message to the user
+        //       }
+            
+        // },
+        onSubmit: async values => {
+            try {
+                const response = await axios.post('http://127.0.0.1:8000/create_internship/', values);
+                console.log('Internship Response:', response.data);
 
                 if (response.status === 201) {
-                    console.log('Internship Posted Successfully')
-                    navigate('/')
-                }
-                else {
+                    console.log('Internship Posted Successfully');
+                    // Handle success, e.g., show a success message to the user
+                } else {
                     console.error('Internship Posting failed:', response.data.error);
-                    console.log('status: ', response.status)
-                    console.log('values: ', values)
+                    // Handle posting failure, e.g., show an error message to the user
                 }
-            }
-            catch (error) {
+            } catch (error) {
                 console.error('API Error:', error);
-                // Handle signup error (e.g., network error)
-                // You might want to set a state to display an error message to the user
-              }
-            
+                // Handle API error, e.g., show an error message to the user
+            }
         },
-        // Add validation schema and validation functions as needed
     });
 
     return (
@@ -140,7 +156,7 @@ const PostInternshipPage = () => {
                             Description
                         </Typography>
                         <EStyledField
-                            minRows={5}
+                            minRows={8} // Increased height
                             placeholder="Enter description"
                             variant="outlined"
                             id="description"
@@ -162,8 +178,8 @@ const PostInternshipPage = () => {
                             onChange={formik.handleChange}
                         />
                     </Grid>
-                    <Grid item xs={12} md={6}>
-                        <FormControl component="fieldset">
+                    <Grid item xs={12} md={6} >
+                        <FormControl component="fieldset" sx={{ marginBottom: '1rem' }}>
                             <FormLabel component="legend">Published</FormLabel>
                             <RadioGroup
                                 row
@@ -178,7 +194,7 @@ const PostInternshipPage = () => {
                         </FormControl>
                     </Grid>
                     <Grid item xs={12} md={6} sx={{ display: 'flex', alignItems: 'flex-end' }}>
-                        <FormControl component="fieldset" sx={{ marginTop: '1rem' }}>
+                        <FormControl component="fieldset" sx={{ marginBottom: '1rem' }}>
                             <FormLabel component="legend">Accepting Application</FormLabel>
                             <RadioGroup
                                 row
@@ -193,7 +209,7 @@ const PostInternshipPage = () => {
                         </FormControl>
                     </Grid>
                     <Grid item xs={12}>
-                        <Button variant="contained" color="primary" type="submit" sx={{ width: '50%', marginLeft: 'auto', marginRight: 'auto', marginTop: '1rem' }}>
+                        <Button variant="contained" color="primary" type="submit" sx={{ width: '50%', marginTop: '1rem',}}>
                             Submit
                         </Button>
                     </Grid>

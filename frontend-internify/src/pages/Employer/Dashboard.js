@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Grid, Paper, Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Button, Grid, Paper, Typography, Box, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { AddCircleOutline, MoreVert, Edit, Delete } from '@mui/icons-material';
 import { useTheme } from '@mui/system';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import axios from 'axios'; // Import axios for making HTTP requests
 
 const EmployerDashboard = () => {
     const theme = useTheme();
     const [anchorEl, setAnchorEl] = useState(null);
-    const [activeButton, setActiveButton] = useState('posted');
+    const [jobs, setJobs] = useState([]); // State to store the fetched jobs
+
     const open = Boolean(anchorEl);
-    const [internships, setInternships] = useState([]);
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -20,25 +20,18 @@ const EmployerDashboard = () => {
         setAnchorEl(null);
     };
 
-    const jobsPosted = internships.filter((job) => job.status === 'posted');
-    const jobsClosed = internships.filter((job) => job.status === 'closed');
-
-    const handleButtonClick = (button) => {
-        setActiveButton(button);
-    };
-
     useEffect(() => {
-        const fetchInternships = async () => {
+        const fetchJobs = async () => {
             try {
                 const response = await axios.get('http://127.0.0.1:8000/internship_list/');
-                setInternships(response.data);
+                setJobs(response.data); // Update jobs state with fetched data
             } catch (error) {
-                console.error('Error fetching internships:', error);
+                console.error('Error fetching jobs:', error);
             }
         };
 
-        fetchInternships();
-    }, []);
+        fetchJobs();
+    }, []); // Empty dependency array to run only once on component mount
 
     return (
         <Grid container spacing={2} sx={{ width: '80%', margin: 'auto' }}>
@@ -47,16 +40,14 @@ const EmployerDashboard = () => {
             </Grid>
             <Grid item xs={12} md={6}>
                 <Button
-                    variant={activeButton === 'posted' ? 'outlined' : 'contained'}
-                    sx={{ marginBottom: '1rem', marginRight: '1rem', textTransform: 'none' }}
-                    onClick={() => handleButtonClick('posted')}
+                    variant="contained"
+                    sx={{ backgroundColor: theme.palette.primary.main, color: 'white', marginBottom: '1rem', marginRight: '1rem', textTransform: 'none', }}
                 >
                     Internships Posted
                 </Button>
                 <Button
-                    variant={activeButton === 'closed' ? 'outlined' : 'contained'}
+                    variant="outlined"
                     sx={{ textTransform: 'none', marginBottom: '1rem' }}
-                    onClick={() => handleButtonClick('closed')}
                 >
                     Closed Internships
                 </Button>
@@ -66,9 +57,9 @@ const EmployerDashboard = () => {
                     <Button
                         startIcon={<AddCircleOutline />}
                         variant="contained"
-                        sx={{ textTransform: 'none' }}
+                        sx={{ backgroundColor: theme.palette.primary.main, color: 'white', textTransform: 'none' }}
                     >
-                        Post Internship
+                        Post Internships
                     </Button>
                 </Link>
             </Grid>
@@ -83,70 +74,37 @@ const EmployerDashboard = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {activeButton === 'posted' &&
-                                jobsPosted.map((job) => (
-                                    <TableRow key={job.id}>
-                                        <TableCell>{job.title}</TableCell>
-                                        <TableCell>{job.applicants}</TableCell>
-                                        <TableCell>
-                                            <IconButton size="small" onClick={handleClick}>
-                                                <MoreVert />
-                                            </IconButton>
-                                            <Menu
-                                                id={`job-menu-${job.id}`}
-                                                anchorEl={anchorEl}
-                                                keepMounted
-                                                open={open}
-                                                onClose={handleClose}
-                                            >
-                                                <MenuItem onClick={handleClose}>
-                                                    <ListItemIcon>
-                                                        <Edit fontSize="small" />
-                                                    </ListItemIcon>
-                                                    <ListItemText>Edit Internship</ListItemText>
-                                                </MenuItem>
-                                                <MenuItem onClick={handleClose}>
-                                                    <ListItemIcon>
-                                                        <Delete fontSize="small" />
-                                                    </ListItemIcon>
-                                                    <ListItemText>Delete Internship</ListItemText>
-                                                </MenuItem>
-                                            </Menu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            {activeButton === 'closed' &&
-                                jobsClosed.map((job) => (
-                                    <TableRow key={job.id}>
-                                        <TableCell>{job.title}</TableCell>
-                                        <TableCell>{job.applicants}</TableCell>
-                                        <TableCell>
-                                            <IconButton size="small" onClick={handleClick}>
-                                                <MoreVert />
-                                            </IconButton>
-                                            <Menu
-                                                id={`job-menu-${job.id}`}
-                                                anchorEl={anchorEl}
-                                                keepMounted
-                                                open={open}
-                                                onClose={handleClose}
-                                            >
-                                                <MenuItem onClick={handleClose}>
-                                                    <ListItemIcon>
-                                                        <Edit fontSize="small" />
-                                                    </ListItemIcon>
-                                                    <ListItemText>Edit Internship</ListItemText>
-                                                </MenuItem>
-                                                <MenuItem onClick={handleClose}>
-                                                    <ListItemIcon>
-                                                        <Delete fontSize="small" />
-                                                    </ListItemIcon>
-                                                    <ListItemText>Delete Internship</ListItemText>
-                                                </MenuItem>
-                                            </Menu>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                            {jobs.map((job) => (
+                                <TableRow key={job.id}>
+                                    <TableCell>{job.title}</TableCell>
+                                    <TableCell>{job.applicants}</TableCell>
+                                    <TableCell>
+                                        <IconButton size="small" onClick={handleClick}>
+                                            <MoreVert />
+                                        </IconButton>
+                                        <Menu
+                                            id={`job-menu-${job.id}`}
+                                            anchorEl={anchorEl}
+                                            keepMounted
+                                            open={open}
+                                            onClose={handleClose}
+                                        >
+                                            <MenuItem onClick={handleClose}>
+                                                <ListItemIcon>
+                                                    <Edit fontSize="small" />
+                                                </ListItemIcon>
+                                                <ListItemText>Edit Internship</ListItemText>
+                                            </MenuItem>
+                                            <MenuItem onClick={handleClose}>
+                                                <ListItemIcon>
+                                                    <Delete fontSize="small" />
+                                                </ListItemIcon>
+                                                <ListItemText>Delete Internship</ListItemText>
+                                            </MenuItem>
+                                        </Menu>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
                         </TableBody>
                     </Table>
                 </TableContainer>

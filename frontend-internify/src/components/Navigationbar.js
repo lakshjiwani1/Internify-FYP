@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AppBar, Button, Divider, Drawer, Hidden, IconButton, Toolbar, Typography, List, ListItem, ListItemText, Menu, MenuItem } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import logo from "../assets/logo-no-background.png";
@@ -13,6 +13,7 @@ function Navigationbar() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userType, setUserType] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
 
   const handleDrawerToggle = () => {
@@ -25,6 +26,20 @@ function Navigationbar() {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleLogout = async () => {
+    try {
+      // Call the logout API endpoint to invalidate tokens and clear session
+      await axios.get('http://127.0.0.1:8000/signout/');
+      // Reset authentication state and redirect to the login page
+      setIsAuthenticated(false);
+      navigate('/login');
+      console.log('logout successful.');
+    } catch (error) {
+      console.error('Logout Error:', error);
+      // Handle logout error
+    }
   };
 
   useEffect(() => {
@@ -54,7 +69,6 @@ function Navigationbar() {
     fetchData();
   }, []);
 
-
   const navigationLinks = [
     { text: 'Home', to: '/' },
     { text: 'Internships', to: '/internships' },
@@ -66,7 +80,7 @@ function Navigationbar() {
   const authLinks = [
     { text: 'Settings', to: '/settings' },
     { text: 'My Applications', to: '/applications' },
-    { text: 'Log Out', to: '/logout' },
+    { text: 'Log Out', onClick: handleLogout }, // Use onClick handler for logout action
   ];
 
   const drawerContent = (

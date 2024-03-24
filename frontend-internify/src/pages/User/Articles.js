@@ -83,7 +83,7 @@ const ArticlesPage = () => {
                 </Grid>
                 <Grid item xs={12}>
                     <Typography variant="h5" sx={{ textAlign: 'center', marginBottom: '2rem' }}>Articles</Typography>
-                    <Grid container spacing={2} justifyContent="center">
+                    <Grid container spacing={2}>
                         {(filteredArticles.length > 0 ? filteredArticles : articles).map((article) => (
                             <Grid item xs={12} md={6} key={article.id}>
                                 <Card>

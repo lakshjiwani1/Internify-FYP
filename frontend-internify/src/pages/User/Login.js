@@ -1,6 +1,5 @@
 import React from 'react';
 import { useFormik } from 'formik';
-import * as Yup from 'yup';
 import { Box, Button, Grid, TextField, Typography, useMediaQuery } from '@mui/material';
 import img from "../../assets/login img.jpeg";
 import { Link, useNavigate } from 'react-router-dom';
