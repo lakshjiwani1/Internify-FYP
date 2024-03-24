@@ -227,10 +227,8 @@ def get_user_information(username):
     User = get_user_model()
     try:
         user = User.objects.get(username=username)
-        username_type = type(user.username)
-        password_type = type(user.password)
         user_type = user.user_type
-        return username_type, password_type, user_type
+        return user_type
         # print(f"username type: {type(user.username)}")
         # print(f"password type: {type(user.password)}")
     except User.DoesNotExist:
@@ -255,8 +253,9 @@ def signin(request):
 
         print(f"Username: {username}")
         print(f"Password: {password}")
-        print(f"User is_active status: {get_is_active_status(username)}")
-        print(f"Types: {get_user_information(username)}")
+
+        # print(f"User is_active status: {get_is_active_status(username)}")
+        # print(f"Types: {get_user_information(username)}")
 
         if not (username and password):
             return JsonResponse({'success': False, 'error': 'Username or password is missing'})
@@ -277,7 +276,6 @@ def signin(request):
                 return JsonResponse({'success': False, 'error': 'User doesnot exist'})
         else:
             return JsonResponse({'success': False, 'error': 'Invalid username or password'})
-
     else:
         form = AuthenticationForm()
         return render(request, 'authentication/signin.html', {'form': form})
@@ -320,7 +318,7 @@ def profile(request):
 
 def signout(request):
     logout(request)
-    return redirect('/signin')
+    return JsonResponse({'success': True})
 
 @csrf_exempt
 def company_registration(request):
