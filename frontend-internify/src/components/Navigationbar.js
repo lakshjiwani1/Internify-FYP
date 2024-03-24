@@ -1,16 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AppBar, Button, Divider, Drawer, Hidden, IconButton, Toolbar, Typography, List, ListItem, ListItemText, Menu, MenuItem } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import logo from "../assets/logo-no-background.png";
 import { NavItem } from "../misc/MUIComponent";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import axios from 'axios';
 
 function Navigationbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userType, setUserType] = useState(null);
   const location = useLocation();
-  const isAuthenticated = false; 
+
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -23,6 +26,34 @@ function Navigationbar() {
   const handleMenuClose = () => {
     setAnchorEl(null);
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Perform user authentication check using the signin API
+        const loginResponse = await axios.post('http://127.0.0.1:8000/signin/', {
+          // You might need to pass any necessary credentials here (username, password)
+        });
+        
+        if (loginResponse.status === 200) {
+          // Authentication successful, set isAuthenticated to true
+          setIsAuthenticated(true);
+          // Set the user type based on the response data
+          setUserType(loginResponse.data.user_type);
+        } else {
+          // Authentication failed, set isAuthenticated to false
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error('API Error:', error);
+        // Handle login error (e.g., network error)
+        setIsAuthenticated(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
 
   const navigationLinks = [
     { text: 'Home', to: '/' },

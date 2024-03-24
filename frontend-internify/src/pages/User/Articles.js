@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Grid, Typography, TextField, Button, Card, CardContent, CardMedia, IconButton } from '@mui/material';
 import { Search, Add } from '@mui/icons-material';
+import { Link } from 'react-router-dom';
 
 const ArticlesPage = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -46,9 +47,11 @@ const ArticlesPage = () => {
         <Container maxWidth="md" sx={{ marginTop: '2rem', marginBottom: '2rem', width: '70%' }}>
             <Grid container spacing={2}>
                 <Grid item xs={12} sx={{ marginBottom: '1rem' }}>
-                    <Button variant="contained" onClick={handleWriteArticle} startIcon={<Add />}>
-                        Write Article
-                    </Button>
+                    <Link to="/articleform" style={{ textDecoration: 'none' }}>
+                        <Button variant="contained" startIcon={<Add />}>
+                             Write Article
+                        </Button>
+                    </Link>
                 </Grid>
                 <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
                     <TextField
@@ -64,15 +67,23 @@ const ArticlesPage = () => {
                     </Button>
                 </Grid>
                 <Grid item xs={12}>
-                    <Typography variant="h5">Topics</Typography>
-                    <Button variant="outlined" onClick={() => handleTopicSelection('Web')} sx={{ marginRight: '1rem', marginTop: '0.5rem' }}>Web</Button>
-                    <Button variant="outlined" onClick={() => handleTopicSelection('App')} sx={{ marginRight: '1rem', marginTop: '0.5rem' }}>App</Button>
-                    <Button variant="outlined" onClick={() => handleTopicSelection('AI')} sx={{ marginRight: '1rem', marginTop: '0.5rem' }}>AI</Button>
+                    <Typography variant="h5" sx={{ textAlign: 'center', marginBottom: '0.5rem' }}>Topics</Typography>
+                    <Grid container spacing={1} justifyContent="center">
+                        <Grid item>
+                            <Button variant="outlined" onClick={() => handleTopicSelection('Web')} sx={{ marginRight: '1rem', marginTop: '0.5rem' }}>Web</Button>
+                        </Grid>
+                        <Grid item>
+                            <Button variant="outlined" onClick={() => handleTopicSelection('App')} sx={{ marginRight: '1rem', marginTop: '0.5rem' }}>App</Button>
+                        </Grid>
+                        <Grid item>
+                            <Button variant="outlined" onClick={() => handleTopicSelection('AI')} sx={{ marginRight: '1rem', marginTop: '0.5rem' }}>AI</Button>
+                        </Grid>
+                    </Grid>
                     {/* Add more topics as needed */}
                 </Grid>
                 <Grid item xs={12}>
-                    <Typography variant="h5">Articles</Typography>
-                    <Grid container spacing={2}>
+                    <Typography variant="h5" sx={{ textAlign: 'center', marginBottom: '2rem' }}>Articles</Typography>
+                    <Grid container spacing={2} justifyContent="center">
                         {(filteredArticles.length > 0 ? filteredArticles : articles).map((article) => (
                             <Grid item xs={12} md={6} key={article.id}>
                                 <Card>

@@ -18,35 +18,41 @@ const LoginForm = () => {
         onSubmit: async (values) => {
             try {
                 console.log('Form Submitted', values);
-              // Send a request to obtain the CSRF token
-              const csrfResponse = await axios.get('http://127.0.0.1:8000/signin/get-csrf-token/');
-              const csrfToken = csrfResponse.data.csrf_token;
-              console.log(csrfToken)
-              // Use the obtained CSRF token in the login request
-              const loginResponse = await axios.post('http://127.0.0.1:8000/signin/', values, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': csrfToken,
-                },
-              });
-              console.log('login Response:', loginResponse)
-              console.log('redirection', loginResponse.data.redirect)
-              console.log('status: ', loginResponse.status)
-              console.log('API Response:', loginResponse.data);
-      
-              if (loginResponse.status === 200) {
-                console.log('login Success');
-                navigate(loginResponse.data.redirect);
-                // Redirect or perform any actions upon successful login
-                // For example, using React Router's `navigate` function
-                // navigate('/');
-              } else {
-                console.error('Login failed:', loginResponse.data.error);
-              }
+                // Send a request to obtain the CSRF token
+                const csrfResponse = await axios.get('http://127.0.0.1:8000/signin/get-csrf-token/');
+                const csrfToken = csrfResponse.data.csrf_token;
+                console.log(csrfToken)
+                // Use the obtained CSRF token in the login request
+                const loginResponse = await axios.post('http://127.0.0.1:8000/signin/', values, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                });
+                console.log('login Response:', loginResponse)
+                console.log('redirection', loginResponse.data.redirect)
+                console.log('status: ', loginResponse.status)
+                console.log('API Response:', loginResponse.data);
+    
+                if (loginResponse.status === 200) {
+                    console.log('login Success');
+                    const userType = loginResponse.data.user_type;
+                    console.log('User Type:', userType);
+                    if (userType === 1) {
+                        navigate('/internships');
+                    } else if (userType === 2) {
+                        navigate('/employer'); // Assuming this is the correct path for employer
+                    } else {
+                        console.error('Invalid user type');
+                        // Handle the case where the user type is neither 1 nor 2
+                    }
+                } else {
+                    console.error('Login failed:', loginResponse.data.error);
+                }
             } catch (error) {
-              console.error('API Error:', error);
-              // Handle login error (e.g., network error)
-              // You might want to set a state to display an error message to the user
+                console.error('API Error:', error);
+                // Handle login error (e.g., network error)
+                // You might want to set a state to display an error message to the user
             }
         },
     });

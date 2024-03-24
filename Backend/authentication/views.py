@@ -238,8 +238,8 @@ def get_user_information(username):
 
 @csrf_exempt
 def signin(request):
-    if request.user.is_authenticated:
-        return JsonResponse({'success': True, 'redirect': '/'})
+    # if request.user.is_authenticated:
+    #     return JsonResponse({'success': True, 'redirect': '/'})
     
     if request.method == 'POST':
         try:
@@ -267,7 +267,14 @@ def signin(request):
 
         if user is not None:
             login(request, user)
-            return JsonResponse({'success': True, 'redirect': '/'})
+            User = get_user_model()
+            try:
+                user = User.objects.get(username=username)
+                user_type = user.user_type
+                print(f"User Type: {user_type}")
+                return JsonResponse({'success': True, 'user_type': user_type})
+            except User.DoesNotExist:
+                return JsonResponse({'success': False, 'error': 'User doesnot exist'})
         else:
             return JsonResponse({'success': False, 'error': 'Invalid username or password'})
 

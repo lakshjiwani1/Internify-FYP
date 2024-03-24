@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.contrib import messages
 
+
 def is_company(user):
     return user.is_authenticated and user.user_type == 2
 
@@ -49,9 +50,12 @@ def create_internship(request):
 # @user_passes_test(is_company)
 @api_view(['GET'])
 def internship_list(request):
-    internships = request.user.companyauth.internships.order_by('-created_at')
-    serializer = InternshipSerializer(internships, many=True)  # Serialize queryset
-    return Response(serializer.data)  # Return serialized data as JSON response
+    try:
+        internships = request.user.companyauth.internships.order_by('-created_at')
+        serializer = InternshipSerializer(internships, many=True)  # Serialize queryset
+        return Response(serializer.data)  # Return serialized data as JSON response
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)  # Return error response in case of any exception
 
 def internship_detail(request, pk):
     internship = get_object_or_404(Internships, pk=pk)
