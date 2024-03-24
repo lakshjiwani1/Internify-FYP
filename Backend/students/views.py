@@ -7,6 +7,8 @@ from .forms import InternshipSearchForm
 from django.http import JsonResponse
 from django.forms.models import model_to_dict
 from django.core.serializers import serialize
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+
 # Create your views here.
 
 def is_student(user):
@@ -19,6 +21,7 @@ def is_student(user):
 #     return render(request, 'students/internship_list.html', {'internships': internships})
     
 # @user_passes_test(is_student)
+# @csrf_exempt
 def view_all_internships(request):
     form = InternshipSearchForm()
     internships = Internships.objects.filter(is_published=True).order_by('-created_at')
