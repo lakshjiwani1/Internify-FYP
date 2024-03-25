@@ -28,20 +28,6 @@ function Navigationbar() {
     setAnchorEl(null);
   };
 
-  const handleLogout = async () => {
-    try {
-      // Call the logout API endpoint to invalidate tokens and clear session
-      await axios.get('http://127.0.0.1:8000/signout/');
-      // Reset authentication state and redirect to the login page
-      setIsAuthenticated(false);
-      navigate('/login');
-      console.log('logout successful.');
-    } catch (error) {
-      console.error('Logout Error:', error);
-      // Handle logout error
-    }
-  };
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -69,6 +55,21 @@ function Navigationbar() {
     fetchData();
   }, []);
 
+
+  const handleLogout = async () => {
+    try {
+        // Call the logout API endpoint to invalidate tokens and clear session
+        await axios.get('http://127.0.0.1:8000/signout/');
+        // Reset authentication state and redirect to the login page
+        setIsAuthenticated(false);
+        navigate('/articles'); // Redirect to the login page
+        console.log('Logout successful.');
+    } catch (error) {
+        console.error('Logout Error:', error);
+        // Handle logout error
+    }
+};
+
   const navigationLinks = [
     { text: 'Home', to: '/' },
     { text: 'Internships', to: '/internships' },
@@ -80,7 +81,7 @@ function Navigationbar() {
   const authLinks = [
     { text: 'Settings', to: '/settings' },
     { text: 'My Applications', to: '/applications' },
-    { text: 'Log Out', onClick: handleLogout }, // Use onClick handler for logout action
+    { text: 'Log Out', onClick: handleLogout }, 
   ];
 
   const drawerContent = (

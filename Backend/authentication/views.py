@@ -236,8 +236,8 @@ def get_user_information(username):
 
 @csrf_exempt
 def signin(request):
-    # if request.user.is_authenticated:
-    #     return JsonResponse({'success': True, 'redirect': '/'})
+    if request.user.is_authenticated:
+        return JsonResponse({'success': True, 'redirect': '/'})
     
     if request.method == 'POST':
         try:

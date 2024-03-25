@@ -1,14 +1,34 @@
 import React, { useState } from 'react';
 import { Container, Grid, Typography, TextField, Button, MenuItem, IconButton } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material'; // Import the ArrowBack icon
+import { ArrowBack } from '@mui/icons-material'; 
+import { useHistory, useNavigate } from 'react-router-dom'; // Import useHistory for redirection
+import axios from 'axios'; // Import Axios for HTTP requests
 
 const ArticleForm = () => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [topic, setTopic] = useState('');
+    const navigate = useNavigate(); // Initialize useHistory
 
-    const handlePostArticle = () => {
-        // Handle posting the article
+    const handlePostArticle = async () => {
+        try {
+            // Send a POST request to add the article
+            await axios.post('http://127.0.0.1:8000/add_article/', {
+                title: title,
+                content: content,
+                topic: topic
+            });
+
+            // Reset the form fields after successfully posting the article
+            setTitle('');
+            setContent('');
+            setTopic('');
+            
+            // Redirect back to the '/articles' page
+            navigate('/articles');
+        } catch (error) {
+            console.error('Error posting article:', error);
+        }
     };
 
     return (
@@ -16,13 +36,12 @@ const ArticleForm = () => {
             <Grid container spacing={2} justifyContent="center">
                 <Grid item xs={12} sx={{ marginBottom: '1rem' }}>
                     <IconButton onClick={() => {window.history.back();}} sx={{ marginBottom: '1rem' }}>
-                        <ArrowBack /> {/* Back button with ArrowBack icon */}
+                        <ArrowBack /> 
                     </IconButton>
                     <Typography variant="h4" sx={{ marginBottom: '1rem', textAlign: 'center' }}>Write Your Article</Typography>
                     <Typography variant="h6" sx={{ marginBottom: '0.5rem' }}>Article Title</Typography>
                     <TextField
                         variant="outlined"
-                        // label="Article Title"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         fullWidth
@@ -31,7 +50,6 @@ const ArticleForm = () => {
                     <Typography variant="h6" sx={{ marginBottom: '0.5rem' }}>Article Content</Typography>
                     <TextField
                         variant="outlined"
-                        // label="Article Content"
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         multiline
@@ -43,7 +61,6 @@ const ArticleForm = () => {
                     <TextField
                         select
                         variant="outlined"
-                        // label="Select Topic"
                         value={topic}
                         onChange={(e) => setTopic(e.target.value)}
                         fullWidth
