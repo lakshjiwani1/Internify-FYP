@@ -271,6 +271,7 @@ def signin(request):
                 user = User.objects.get(username=username)
                 user_type = user.user_type
                 print(f"User Type: {user_type}")
+                # get_csrf_token(request=request)
                 return JsonResponse({'success': True, 'user_type': user_type})
             except User.DoesNotExist:
                 return JsonResponse({'success': False, 'error': 'User doesnot exist'})

@@ -10,7 +10,7 @@ const EmployerDashboard = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [internships, setInternships] = useState([]);
   const open = Boolean(anchorEl);
-
+  
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };

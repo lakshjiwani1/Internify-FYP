@@ -9,7 +9,8 @@ from .serializers import InternshipSerializer
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from django.contrib import messages
-
+from django.core.serializers import serialize
+import json
 
 def is_company(user):
     return user.is_authenticated and user.user_type == 2
@@ -51,11 +52,28 @@ def create_internship(request):
 @api_view(['GET'])
 def internship_list(request):
     try:
+        # print("User Signed In:", request.user.username)
+        # print("Getting Internship List")
+        # internships = request.user.companyauth.internships.order_by('-created_at')
+        # print("Data stored in internships variable")
+        # serializer = InternshipSerializer(internships, many=True)
+        # print("Returning Data")
+        # return Response(serializer.data)  
         internships = request.user.companyauth.internships.order_by('-created_at')
-        serializer = InternshipSerializer(internships, many=True)  # Serialize queryset
-        return JsonResponse(serializer.data)  # Return serialized data as JSON response
+        context = {'internships': internships}  # Initialize context with an empty list
+        print(f"Request_Body: {request.body}")
+        print(internships)
+        internships_json = serialize('json', internships)
+        print(f"Internships Json: {internships_json}")
+        internships_data = json.loads(internships_json)
+        print(f"Internships data: {internships_data}")
+        context = {'internships': internships_data}
+        print(f"Context: {context}")
+        print(f"Json Response: {JsonResponse(context)}")
+        return JsonResponse(context)
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)  # Return error response in case of any exception
+        print("Error occured")
+        return JsonResponse({'error': str(e)}, status=500)  
 
 def internship_detail(request, pk):
     internship = get_object_or_404(Internships, pk=pk)
