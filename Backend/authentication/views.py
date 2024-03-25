@@ -317,7 +317,9 @@ def profile(request):
 
 
 def signout(request):
+    print("Signing out")
     logout(request)
+    print("Signout successfull")
     return JsonResponse({'success': True})
 
 @csrf_exempt

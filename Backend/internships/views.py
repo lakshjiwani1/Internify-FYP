@@ -53,7 +53,7 @@ def internship_list(request):
     try:
         internships = request.user.companyauth.internships.order_by('-created_at')
         serializer = InternshipSerializer(internships, many=True)  # Serialize queryset
-        return Response(serializer.data)  # Return serialized data as JSON response
+        return JsonResponse(serializer.data)  # Return serialized data as JSON response
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)  # Return error response in case of any exception
 

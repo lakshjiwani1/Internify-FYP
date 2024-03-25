@@ -4,6 +4,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import logo from "../assets/logo-no-background.png";
 import { NavItem } from "../misc/MUIComponent";
 import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const EmployerNavigationbar = () => {
   const navigate = useNavigate();
@@ -11,11 +12,19 @@ const EmployerNavigationbar = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   // Function to handle logout
-  const handleLogout = () => {
-    // Perform logout operations here
-    setIsAuthenticated(false);
-    navigate('/login'); // Redirect to home page after logout
-  };
+  const handleLogout = async () => {
+    try {
+        // Call the logout API endpoint to invalidate tokens and clear session
+        await axios.get('http://127.0.0.1:8000/signout/');
+        // Reset authentication state and redirect to the login page
+        setIsAuthenticated(false);
+        navigate('/login'); // Redirect to the login page
+        console.log('Logout successful.');
+    } catch (error) {
+        console.error('Logout Error:', error);
+        // Handle logout error
+    }
+};
 
   // Navigation links when user is authenticated
   const authenticatedNavigationLinks = [

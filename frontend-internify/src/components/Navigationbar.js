@@ -32,19 +32,21 @@ function Navigationbar() {
     const fetchData = async () => {
       try {
         // Perform user authentication check using the signin API
-        const loginResponse = await axios.post('http://127.0.0.1:8000/signin/', {
-          // You might need to pass any necessary credentials here (username, password)
-        });
-        
-        if (loginResponse.status === 200) {
-          // Authentication successful, set isAuthenticated to true
-          setIsAuthenticated(true);
-          // Set the user type based on the response data
-          setUserType(loginResponse.data.user_type);
-        } else {
-          // Authentication failed, set isAuthenticated to false
-          setIsAuthenticated(false);
+        if (location.pathname === '/login') {
+          const loginResponse = await axios.post('http://127.0.0.1:8000/signin/', {
+            // You might need to pass any necessary credentials here (username, password)
+          });
+          
+          if (loginResponse.status === 200) {
+            // Authentication successful, set isAuthenticated to true
+            setIsAuthenticated(true);
+            // Set the user type based on the response data
+            setUserType(loginResponse.data.user_type);
+          } else {
+            // Authentication failed, set isAuthenticated to false
+            setIsAuthenticated(false);
         }
+      }
       } catch (error) {
         console.error('API Error:', error);
         // Handle login error (e.g., network error)
