@@ -34,13 +34,8 @@ function Navigationbar() {
     try {
         await axios.get('http://127.0.0.1:8000/signout/');
         setIsAuthenticated(false);
-<<<<<<< HEAD
         console.log('isAuthenticated', isAuthenticated);
         navigate('/login'); 
-=======
-        console.log('Is Authenticated: ', isAuthenticated)
-        navigate('/articles'); // Redirect to the login page
->>>>>>> 6e5a0337d5b3b9fc87bbb0648192d04d015bb61f
         console.log('Logout successful.');
     } catch (error) {
         console.error('Logout Error:', error);

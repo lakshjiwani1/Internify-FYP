@@ -10,23 +10,14 @@ import { useAuth } from './Authentication';
 const EmployerNavigationbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-<<<<<<< HEAD
   const { isAuthenticated, setIsAuthenticated } = useAuth();
-=======
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
->>>>>>> 6e5a0337d5b3b9fc87bbb0648192d04d015bb61f
 
   // Function to handle logout
   const handleLogout = async () => {
     try {
         await axios.get('http://127.0.0.1:8000/signout/');
         setIsAuthenticated(false);
-<<<<<<< HEAD
         navigate('/login'); 
-=======
-        console.log('Is Authenticated: ', isAuthenticated)
-        navigate('/login'); // Redirect to the login page
->>>>>>> 6e5a0337d5b3b9fc87bbb0648192d04d015bb61f
         console.log('Logout successful.');
     } catch (error) {
         console.error('Logout Error:', error);
