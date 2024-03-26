@@ -8,9 +8,9 @@ import axios from 'axios'; // Import axios for making HTTP requests
 const EmployerDashboard = () => {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [internships, setInternships] = useState([]);
+  // const [internships, setInternships] = useState([]);
   const open = Boolean(anchorEl);
-  
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -19,24 +19,69 @@ const EmployerDashboard = () => {
     setAnchorEl(null);
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('http://127.0.0.1:8000/internship_list/');
-        const data = await response.json();
-        console.log(data);
-        if (data.hasOwnProperty('internships') && Array.isArray(data.internships)) {
-          setInternships(data.internships);
-        } else {
-          console.error('Invalid data format:', data);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await fetch('http://127.0.0.1:8000/internship_list/');
+  //       const data = await response.json();
+  //       console.log(data);
+  //       if (data.hasOwnProperty('internships') && Array.isArray(data.internships)) {
+  //         setInternships(data.internships);
+  //       } else {
+  //         console.error('Invalid data format:', data);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching data:', error);
+  //     }
+  //   };
 
-    fetchData();
-  }, []);
+  //   fetchData();
+  // }, []);
+
+
+  const jobs = [
+    {
+      title: 'Testing Internship 2',
+      startDate: '2024-05-01',
+      endDate: '2024-06-01',
+      location: 'Karachi',
+      applicationDeadline: '2024-04-01',
+      applicants: 0, // Assuming there are no applicants initially
+    },
+    {
+      title: 'Sameer',
+      startDate: '2024-01-01',
+      endDate: '2024-02-01',
+      location: 'Karachi',
+      applicationDeadline: '2024-11-01',
+      applicants: 0, // Assuming there are no applicants initially
+    },
+    {
+      title: 'New Internship',
+      startDate: '2024-01-01',
+      endDate: '2024-02-01',
+      location: 'Karachi',
+      applicationDeadline: '2023-12-31',
+      applicants: 0, // Assuming there are no applicants initially
+    },
+    {
+      title: 'GSOC',
+      startDate: '2023-12-01',
+      endDate: '2024-01-01',
+      location: 'Karachi',
+      applicationDeadline: '2023-11-01',
+      applicants: 0, // Assuming there are no applicants initially
+    },
+    {
+      title: 'Hello Internship',
+      startDate: '2023-05-01',
+      endDate: '2023-06-01',
+      location: 'Karachi',
+      applicationDeadline: '2023-04-01',
+      applicants: 0, // Assuming there are no applicants initially
+    },
+  ];
+  
 
   return (
     <Grid container spacing={2} sx={{ width: '80%', margin: 'auto' }}>
@@ -69,33 +114,33 @@ const EmployerDashboard = () => {
         </Link>
       </Grid>
       <Grid item xs={12} md={12} sx={{ marginLeft: 'auto', marginRight: 'auto' }}>
-        {internships.length > 0 ? (
-        <TableContainer component={Paper} sx={{ marginBottom: '1rem', borderBottom: '2px solid #ccc' }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Internship</TableCell>
-                <TableCell>Start Date</TableCell>
-                <TableCell>End Date</TableCell>
-                <TableCell>Location</TableCell>
-                <TableCell>Application Deadline</TableCell>
-                <TableCell>Action</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {internships.map((internship) => (
-                <TableRow key={internship.id}>
-                  <TableCell>{internship.fields.title}</TableCell>
-                  <TableCell>{internship.fields.start_date}</TableCell>
-                  <TableCell>{internship.fields.end_date}</TableCell>
-                  <TableCell>{internship.fields.location}</TableCell>
-                  <TableCell>{internship.fields.application_deadline}</TableCell>
-                  <TableCell>
-                    <IconButton size="small" onClick={(event) => handleClick(event, internship)}>
+        {jobs.length > 0 ? (
+          <TableContainer component={Paper} sx={{ marginBottom: '1rem', borderBottom: '2px solid #ccc' }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Internship</TableCell>
+                  <TableCell>Start Date</TableCell>
+                  <TableCell>End Date</TableCell>
+                  <TableCell>Location</TableCell>
+                  <TableCell>Application Deadline</TableCell>
+                  <TableCell>Action</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {jobs.map((jobs) => (
+                  <TableRow key={jobs.id}>
+                    <TableCell>{jobs.title}</TableCell>
+                    <TableCell>{jobs.startDate}</TableCell>
+                    <TableCell>{jobs.endDate}</TableCell>
+                    <TableCell>{jobs.location}</TableCell>
+                    <TableCell>{jobs.applicationDeadline}</TableCell>
+                    <TableCell>
+                    <IconButton size="small" onClick={(event) => handleClick(event, jobs)}>
                       <MoreVert />
                     </IconButton>
                     <Menu
-                      id={`internship-menu-${internship.pk}`}
+                      id={`internship-menu-${jobs.pk}`}
                       anchorEl={anchorEl}
                       keepMounted
                       open={open}
@@ -120,11 +165,11 @@ const EmployerDashboard = () => {
             </TableBody>
           </Table>
         </TableContainer>
-        ) : (
-          <Typography variant="body1" sx={{textAlign: 'center', marginBottom: "1rem"}}>No internships posted.</Typography>
+      ) : (
+      <Typography variant="body1" sx={{ textAlign: 'center', marginBottom: "1rem" }}>No internships posted.</Typography>
         )}
-      </Grid>
     </Grid>
+    </Grid >
   );
 };
 
