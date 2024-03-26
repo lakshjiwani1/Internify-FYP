@@ -6,9 +6,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { StyledField, Flexbox } from '../../misc/MUIComponent';
 import axios from 'axios';
 import * as Yup from 'yup';
+import { useAuth } from '../../components/Authentication';
 
 const LoginForm = () => {
   const navigate = useNavigate();
+  const { setIsAuthenticated } = useAuth();
 
   const formik = useFormik({
     initialValues: {
@@ -40,6 +42,7 @@ const LoginForm = () => {
 
         if (loginResponse.status === 200) {
           console.log('login Success');
+          setIsAuthenticated(true);
           const userType = loginResponse.data.user_type;
           console.log('User Type:', userType);
           if (userType === 1) {
@@ -54,8 +57,6 @@ const LoginForm = () => {
         }
       } catch (error) {
         console.error('API Error:', error);
-        // Handle login error (e.g., network error)
-        // You might want to set a state to display an error message to the user
       }
     },
   });

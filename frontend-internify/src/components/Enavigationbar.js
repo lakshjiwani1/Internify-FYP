@@ -1,24 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppBar, Divider, IconButton, Toolbar, Typography, Button } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import logo from "../assets/logo-no-background.png";
 import { NavItem } from "../misc/MUIComponent";
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useAuth } from './Authentication';
 
 const EmployerNavigationbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const { isAuthenticated, setIsAuthenticated } = useAuth();
 
   // Function to handle logout
   const handleLogout = async () => {
     try {
-        // Call the logout API endpoint to invalidate tokens and clear session
         await axios.get('http://127.0.0.1:8000/signout/');
-        // Reset authentication state and redirect to the login page
         setIsAuthenticated(false);
-        navigate('/login'); // Redirect to the login page
+        navigate('/login'); 
         console.log('Logout successful.');
     } catch (error) {
         console.error('Logout Error:', error);
@@ -62,12 +61,11 @@ const EmployerNavigationbar = () => {
               ))}
             </Typography>
           ) : (
-            // Display Log In button when not authenticated
             <Button
               variant='outlined'
               color="inherit"
               component={NavItem}
-              to="/elogin"
+              to="/login"
               sx={{
                 width: "7rem",
                 marginRight: 2,

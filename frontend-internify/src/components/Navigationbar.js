@@ -6,14 +6,16 @@ import logo from "../assets/logo-no-background.png";
 import { NavItem } from "../misc/MUIComponent";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import axios from 'axios';
+import { useAuth } from './Authentication';
 
 function Navigationbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userType, setUserType] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated ,setIsAuthenticated } = useAuth();
 
 
   const handleDrawerToggle = () => {
@@ -28,47 +30,15 @@ function Navigationbar() {
     setAnchorEl(null);
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Perform user authentication check using the signin API
-        if (location.pathname === '/login') {
-          const loginResponse = await axios.post('http://127.0.0.1:8000/signin/', {
-            // You might need to pass any necessary credentials here (username, password)
-          });
-          
-          if (loginResponse.status === 200) {
-            // Authentication successful, set isAuthenticated to true
-            setIsAuthenticated(true);
-            // Set the user type based on the response data
-            setUserType(loginResponse.data.user_type);
-          } else {
-            // Authentication failed, set isAuthenticated to false
-            setIsAuthenticated(false);
-        }
-      }
-      } catch (error) {
-        console.error('API Error:', error);
-        // Handle login error (e.g., network error)
-        setIsAuthenticated(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-
   const handleLogout = async () => {
     try {
-        // Call the logout API endpoint to invalidate tokens and clear session
         await axios.get('http://127.0.0.1:8000/signout/');
-        // Reset authentication state and redirect to the login page
         setIsAuthenticated(false);
-        navigate('/articles'); // Redirect to the login page
+        console.log('isAuthenticated', isAuthenticated);
+        navigate('/login'); 
         console.log('Logout successful.');
     } catch (error) {
         console.error('Logout Error:', error);
-        // Handle logout error
     }
 };
 
