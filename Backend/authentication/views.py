@@ -269,11 +269,33 @@ def signin(request):
             User = get_user_model()
             try:
                 user = User.objects.get(username=username)
-                print(F"User Details: {user}")
-                user_type = user.user_type
-                print(f"User Type: {user_type}")
+                if user.user_type == 1:
+                    profile = user.student
+                    user_details = {
+                    'user_type': user.user_type,
+                    'first_name': profile.first_name,
+                    'last_name': profile.last_name,
+                    'email':profile.email,
+                    'user_id':profile.user_id,
+                    }
+                elif user.user_type == 2:
+                    profile = user.companyauth
+                    user_details = {
+                        'user_type': user.user_type,
+                        'name': profile.name,
+                        'contact_number': profile.contact_number,
+                        'address': profile.address,
+                        'industry_type': profile.industry_type,
+                        'website_url': profile.website_url,
+                        'description': profile.description,
+                        'email': profile.email,
+                        'user_id': profile.user_id
+                    }
+                # print(F"User Details: {user}")
+                # print(f"User Type: {user_type}")
                 # get_csrf_token(request=request)
-                return JsonResponse({'success': True, 'user_type': user_type})
+                
+                return JsonResponse({'success': True, 'user_details': user_details})
             except User.DoesNotExist:
                 return JsonResponse({'success': False, 'error': 'User doesnot exist'})
         else:
