@@ -269,6 +269,7 @@ def signin(request):
             User = get_user_model()
             try:
                 user = User.objects.get(username=username)
+                print(F"User Details: {user}")
                 user_type = user.user_type
                 print(f"User Type: {user_type}")
                 # get_csrf_token(request=request)
