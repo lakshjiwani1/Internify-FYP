@@ -1,22 +1,37 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { AppBar, Button, Divider, Drawer, Hidden, IconButton, Toolbar, Typography, List, ListItem, ListItemText, Menu, MenuItem } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { selectUserState, userActions } from "../store/user/user-slice";
+import { useLocation, useNavigate } from "react-router-dom";
+import {
+  AppBar,
+  Button,
+  Divider,
+  Drawer,
+  Hidden,
+  IconButton,
+  Toolbar,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Menu,
+  MenuItem,
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 import logo from "../assets/logo-no-background.png";
 import { NavItem } from "../misc/MUIComponent";
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import axios from 'axios';
-import { useAuth } from './Authentication';
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import axios from "axios";
 
 function Navigationbar() {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
-  // const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userType, setUserType] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated ,setIsAuthenticated } = useAuth();
+  const dispatch = useDispatch();
 
+  const userId = useSelector(selectUserState.details.user_id)
+
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -32,28 +47,27 @@ function Navigationbar() {
 
   const handleLogout = async () => {
     try {
-        await axios.get('http://127.0.0.1:8000/signout/');
-        setIsAuthenticated(false);
-        console.log('isAuthenticated', isAuthenticated);
-        navigate('/login'); 
-        console.log('Logout successful.');
+      await axios.get("http://127.0.0.1:8000/signout/");
+      dispatch(userActions.logout());
+      navigate("/login");
+      console.log("Logout successful.");
     } catch (error) {
-        console.error('Logout Error:', error);
+      console.error("Logout Error:", error);
     }
-};
+  };
 
   const navigationLinks = [
-    { text: 'Home', to: '/' },
-    { text: 'Internships', to: '/internships' },
-    { text: 'Resume Builder', to: '/resume' },
-    { text: 'Articles', to: '/articles' },
-    { text: 'Companies', to: '/companies' },
+    { text: "Home", to: "/" },
+    { text: "Internships", to: "/internships" },
+    { text: "Resume Builder", to: "/resume" },
+    { text: "Articles", to: "/articles" },
+    { text: "Companies", to: "/companies" },
   ];
 
   const authLinks = [
-    { text: 'Settings', to: '/settings' },
-    { text: 'My Applications', to: '/applications' },
-    { text: 'Log Out', onClick: handleLogout }, 
+    { text: "Settings", to: "/settings" },
+    { text: "My Applications", to: "/applications" },
+    { text: "Log Out", onClick: handleLogout },
   ];
 
   const drawerContent = (
@@ -74,7 +88,7 @@ function Navigationbar() {
 
   return (
     <>
-      <AppBar position='static' color='transparent'  >
+      <AppBar position="static" color="transparent">
         <Toolbar>
           <Hidden mdUp>
             {/* Menu icon for mobile screens */}
@@ -83,8 +97,7 @@ function Navigationbar() {
               color="inherit"
               aria-label="menu"
               onClick={handleDrawerToggle}
-              sx={{ marginRight: 1 }}
-            >
+              sx={{ marginRight: 1 }}>
               <MenuIcon />
             </IconButton>
           </Hidden>
@@ -93,18 +106,31 @@ function Navigationbar() {
             <IconButton
               edge="start"
               color="inherit"
-              aria-label='menu'
-              sx={{ flexGrow: 1, textAlign: 'center', "&:hover": { backgroundColor: 'transparent' } }}
-            >
-              <img src={logo} alt='Logo' style={{ width: "8rem", marginLeft: 10 }} />
+              aria-label="menu"
+              sx={{
+                flexGrow: 1,
+                textAlign: "center",
+                "&:hover": { backgroundColor: "transparent" },
+              }}>
+              <img src={logo} alt="Logo" style={{ width: "8rem", marginLeft: 10 }} />
             </IconButton>
           </NavItem>
 
           <Hidden smDown>
             {/* Navigation links for tablet and desktop screens */}
-            <Typography variant="h6" sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end', gap: '40px' }}>
+            <Typography
+              variant="h6"
+              sx={{
+                flexGrow: 1,
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "40px",
+              }}>
               {navigationLinks.map((link, index) => (
-                <NavItem key={index} to={link.to} isActive={location.pathname === link.to}>
+                <NavItem
+                  key={index}
+                  to={link.to}
+                  isActive={location.pathname === link.to}>
                   {link.text}
                 </NavItem>
               ))}
@@ -119,14 +145,13 @@ function Navigationbar() {
               onClose={handleDrawerToggle}
               ModalProps={{
                 keepMounted: true, // Better open performance on mobile.
-              }}
-            >
+              }}>
               {drawerContent}
             </Drawer>
           </Hidden>
 
           <Hidden smDown>
-            {isAuthenticated ? (
+            {userId ? (
               // User dropdown menu for tablet and desktop screens if authenticated
               <>
                 <IconButton
@@ -135,27 +160,29 @@ function Navigationbar() {
                   aria-haspopup="true"
                   onClick={handleMenuOpen}
                   color="inherit"
-                  sx={{marginLeft: 5}}
-                >
-                  <AccountCircleIcon fontSize='large' />
+                  sx={{ marginLeft: 5 }}>
+                  <AccountCircleIcon fontSize="large" />
                 </IconButton>
                 <Menu
                   id="menu-appbar"
                   anchorEl={anchorEl}
                   anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'right',
+                    vertical: "bottom",
+                    horizontal: "right",
                   }}
                   keepMounted
                   transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
+                    vertical: "top",
+                    horizontal: "right",
                   }}
                   open={Boolean(anchorEl)}
-                  onClose={handleMenuClose}
-                >
+                  onClose={handleMenuClose}>
                   {authLinks.map((link, index) => (
-                    <MenuItem key={index} component={NavItem} to={link.to} onClick={handleMenuClose}>
+                    <MenuItem
+                      key={index}
+                      component={NavItem}
+                      to={link.to}
+                      onClick={handleMenuClose}>
                       {link.text}
                     </MenuItem>
                   ))}
@@ -173,18 +200,17 @@ function Navigationbar() {
                     marginLeft: 5,
                     fontWeight: 500,
                     borderRadius: 10,
-                    textTransform: 'none',
+                    textTransform: "none",
                     fontSize: "1.2rem",
                     color: "#4F5665",
-                    '&:hover': {
+                    "&:hover": {
                       backgroundColor: "white",
                     },
-                  }}
-                >
+                  }}>
                   Log In
                 </Button>
                 <Button
-                  variant='outlined'
+                  variant="outlined"
                   color="inherit"
                   component={NavItem}
                   to="/signup"
@@ -194,14 +220,13 @@ function Navigationbar() {
                     color: "white",
                     backgroundColor: "#F53855",
                     borderRadius: 10,
-                    textTransform: 'none',
+                    textTransform: "none",
                     fontWeight: 500,
-                    '&:hover': {
+                    "&:hover": {
                       backgroundColor: "white",
                       color: "#F53855",
                     },
-                  }}
-                >
+                  }}>
                   Sign Up
                 </Button>
               </>
@@ -209,7 +234,7 @@ function Navigationbar() {
           </Hidden>
         </Toolbar>
       </AppBar>
-      <Divider sx={{ backgroundColor: 'rgba(0, 0, 0, 0.12)' }} />
+      <Divider sx={{ backgroundColor: "rgba(0, 0, 0, 0.12)" }} />
     </>
   );
 }
