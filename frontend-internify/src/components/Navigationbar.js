@@ -28,7 +28,10 @@ function Navigationbar() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const userId = useSelector(selectUserState.details.user_id)
+  // const userId = useSelector(selectUserState).details.user_id;
+  const userState = useSelector(selectUserState);
+  const userId = userState?.details?.user_id;
+
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -46,14 +49,16 @@ function Navigationbar() {
   };
 
   const handleLogout = async () => {
-    try {
-      await axios.get("http://127.0.0.1:8000/signout/");
-      dispatch(userActions.logout());
-      navigate("/login");
+    // try {
+      // await axios.get("http://127.0.0.1:8000/signout/");
+      // dispatch(userActions.logout());
+      localStorage.removeItem('persist:root');
+      window.location = '/login';
+      // navigate("/login");
       console.log("Logout successful.");
-    } catch (error) {
-      console.error("Logout Error:", error);
-    }
+    // } catch (error) {
+    //   console.error("Logout Error:", error);
+    // }
   };
 
   const navigationLinks = [
