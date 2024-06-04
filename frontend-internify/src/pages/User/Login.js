@@ -39,16 +39,14 @@ const LoginForm = () => {
           },
         });
         console.log("login Response:", loginResponse);
-        // console.log("redirection", loginResponse.data.redirect);
-        // console.log("status: ", loginResponse.status);
-        // console.log("API Response:", loginResponse.data);
-
+        console.log("redirection", loginResponse.data.redirect);
+        console.log("status: ", loginResponse.status);
+        console.log("API Response:", loginResponse.data);
 
         if (loginResponse.status === 200) {
           console.log("login Success");
-          dispatch(userActions.login({ token: csrfToken, details: loginResponse.data.user_details }));
-          console.log("value:", { token: csrfToken, details: loginResponse.data.user_details });
-          const userType = loginResponse.data.user_details.user_type;  
+          dispatch(userActions.login({ token: csrfToken, details: loginResponse.data }));
+          const userType = loginResponse.data.user_type;
           console.log("User Type:", userType);
           if (userType === 1) {
             navigate("/internships");

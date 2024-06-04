@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'internships',
     'students',
     'articles',
+    'resume',
 ]
 
 MIDDLEWARE = [
@@ -120,7 +121,7 @@ DATABASES = {
         # 'PASSWORD': 'root',
         'PASSWORD': 'rootpassword',
         # 'HOST':'localhost',
-        'HOST': 'internify-1.c924mayq6nod.eu-north-1.rds.amazonaws.com',
+        # 'HOST': 'internify-1.c924mayq6nod.eu-north-1.rds.amazonaws.com',
         'PORT': '3306'
     }
 }

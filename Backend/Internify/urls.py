@@ -26,6 +26,7 @@ urlpatterns = [
     path('', include('internships.urls')),
     path('', include('students.urls')),
     path('', include('articles.urls')),
+    path('', include('resume.urls')),
     # path('', views.home, name='home'),
     # path('signup/', views.signup, name='signup'),
 ]
