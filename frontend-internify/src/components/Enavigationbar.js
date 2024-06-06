@@ -12,20 +12,22 @@ const EmployerNavigationbar = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   
-  const userId = useSelector(selectUserState.details.user_id)
+// const userId = useSelector(selectUserState.details.user_id);
+const userState = useSelector(selectUserState);
+const userId = userState?.details?.user_id;
 
-  // Function to handle logout
-  const handleLogout = async () => {
-    try {
-      await axios.get("http://127.0.0.1:8000/signout/");
-      dispatch(userActions.logout());
-      navigate("/login");
-      console.log("Logout successful.");
-    } catch (error) {
-      console.error("Logout Error:", error);
-      // Handle logout error
-    }
-  };
+// Function to handle logout
+const handleLogout = async () => {
+  // try {
+    // await axios.get("http://127.0.0.1:8000/signout/");
+    // dispatch(userActions.logout());
+    localStorage.removeItem('persist:root');
+    window.location = '/login';
+    // navigate("/login");
+    console.log("Logout successful.");
+  // } catch (error) {
+  //   console.error("Logout Error:", error);
+  }
 
   // Navigation links when user is authenticated
   const authenticatedNavigationLinks = [

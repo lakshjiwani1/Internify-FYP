@@ -20,7 +20,6 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import logo from "../assets/logo-no-background.png";
 import { NavItem } from "../misc/MUIComponent";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import axios from "axios";
 
 function Navigationbar() {
@@ -28,7 +27,8 @@ function Navigationbar() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const userId = useSelector(selectUserState.details.user_id)
+  const userState = useSelector(selectUserState);
+  const userId = userState?.details?.user_id;
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -37,23 +37,10 @@ function Navigationbar() {
     setMobileOpen(!mobileOpen);
   };
 
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
-
   const handleLogout = async () => {
-    try {
-      await axios.get("http://127.0.0.1:8000/signout/");
-      dispatch(userActions.logout());
-      navigate("/login");
-      console.log("Logout successful.");
-    } catch (error) {
-      console.error("Logout Error:", error);
-    }
+    localStorage.removeItem('persist:root');
+    window.location = '/login';
+    console.log("Logout successful.");
   };
 
   const navigationLinks = [
@@ -64,12 +51,6 @@ function Navigationbar() {
     { text: "Companies", to: "/companies" },
   ];
 
-  const authLinks = [
-    { text: "Settings", to: "/settings" },
-    { text: "My Applications", to: "/applications" },
-    { text: "Log Out", onClick: handleLogout },
-  ];
-
   const drawerContent = (
     <List>
       {navigationLinks.map((link, index) => (
@@ -78,11 +59,11 @@ function Navigationbar() {
         </ListItem>
       ))}
       <Divider />
-      {authLinks.map((link, index) => (
-        <ListItem key={index} component={NavItem} to={link.to}>
-          <ListItemText primary={link.text} />
+      {userId && (
+        <ListItem button onClick={handleLogout}>
+          <ListItemText primary="Log Out" />
         </ListItem>
-      ))}
+      )}
     </List>
   );
 
@@ -152,42 +133,26 @@ function Navigationbar() {
 
           <Hidden smDown>
             {userId ? (
-              // User dropdown menu for tablet and desktop screens if authenticated
-              <>
-                <IconButton
-                  aria-label="account of current user"
-                  aria-controls="menu-appbar"
-                  aria-haspopup="true"
-                  onClick={handleMenuOpen}
-                  color="inherit"
-                  sx={{ marginLeft: 5 }}>
-                  <AccountCircleIcon fontSize="large" />
-                </IconButton>
-                <Menu
-                  id="menu-appbar"
-                  anchorEl={anchorEl}
-                  anchorOrigin={{
-                    vertical: "bottom",
-                    horizontal: "right",
-                  }}
-                  keepMounted
-                  transformOrigin={{
-                    vertical: "top",
-                    horizontal: "right",
-                  }}
-                  open={Boolean(anchorEl)}
-                  onClose={handleMenuClose}>
-                  {authLinks.map((link, index) => (
-                    <MenuItem
-                      key={index}
-                      component={NavItem}
-                      to={link.to}
-                      onClick={handleMenuClose}>
-                      {link.text}
-                    </MenuItem>
-                  ))}
-                </Menu>
-              </>
+              // Display Log Out button when authenticated
+              <Button
+                variant="outlined"
+                color="inherit"
+                onClick={handleLogout}
+                sx={{
+                  width: "7rem",
+                  marginRight: 2,
+                  marginLeft: 5,
+                  color: "#F53855",
+                  borderRadius: 10,
+                  textTransform: "none",
+                  fontWeight: 500,
+                  "&:hover": {
+                    backgroundColor: "#F53855",
+                    color: "white",
+                  },
+                }}>
+                Log Out
+              </Button>
             ) : (
               // Log In and Sign Up buttons for tablet and desktop screens if not authenticated
               <>
