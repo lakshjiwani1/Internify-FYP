@@ -1,2 +1,4 @@
 config.ini
+myenv
 media
+Backend/spacy_model
