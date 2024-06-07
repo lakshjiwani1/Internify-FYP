@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Grid, Typography, TextField, Button, Card, CardContent } from '@mui/material';
 import { Search, Add } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
-import axios from 'axios'; // Import Axios for HTTP requests
+import axios from 'axios'; 
 
 const ArticlesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -13,8 +13,12 @@ const ArticlesPage = () => {
     const fetchArticles = async () => {
       try {
         const response = await axios.get('http://127.0.0.1:8000/view_articles/');
+        console.log('API response:', response.data); // Debugging statement
+
         if (response.data && Array.isArray(response.data.articles)) {
           setArticles(response.data.articles);
+          setFilteredArticles(response.data.articles); // Initialize filteredArticles with all articles
+          console.log('Articles set:', response.data.articles); // Debugging statement
         } else {
           console.error('Invalid data format:', response.data);
         }
@@ -61,20 +65,6 @@ const ArticlesPage = () => {
           </Button>
         </Grid>
         <Grid item xs={12}>
-          <Typography variant="h5" sx={{ textAlign: 'center', marginBottom: '0.5rem' }}>Topics</Typography>
-          <Grid container spacing={1} justifyContent="center">
-            <Grid item>
-              <Button variant="outlined" onClick={() => handleTopicSelection('Web')} sx={{ marginRight: '1rem', marginTop: '0.5rem' }}>Web</Button>
-            </Grid>
-            <Grid item>
-              <Button variant="outlined" onClick={() => handleTopicSelection('App')} sx={{ marginRight: '1rem', marginTop: '0.5rem' }}>App</Button>
-            </Grid>
-            <Grid item>
-              <Button variant="outlined" onClick={() => handleTopicSelection('AI')} sx={{ marginRight: '1rem', marginTop: '0.5rem' }}>AI</Button>
-            </Grid>
-          </Grid>
-        </Grid>
-        <Grid item xs={12}>
           <Typography variant="h5" sx={{ textAlign: 'center', marginBottom: '2rem' }}>Articles</Typography>
           <Grid container spacing={2}>
             {articles.length > 0 ? (
@@ -85,7 +75,6 @@ const ArticlesPage = () => {
                       <Typography variant="h6">{article.title}</Typography>
                       <Typography variant="subtitle1">Topic: {article.topic}</Typography>
                       <Typography variant="body2" sx={{ marginBottom: '1rem' }}>{article.content}</Typography>
-                      {/* Add other fields as needed */}
                     </CardContent>
                   </Card>
                 </Grid>

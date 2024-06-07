@@ -1,7 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { selectUserState, userActions } from "../store/user/user-slice";
-import { AppBar, Divider, IconButton, Toolbar, Typography, Button } from "@mui/material";
+import { AppBar, Divider, IconButton, Toolbar, Typography, Button, Box } from "@mui/material";
 import logo from "../assets/logo-no-background.png";
 import { NavItem } from "../misc/MUIComponent";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -12,27 +12,19 @@ const EmployerNavigationbar = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   
-// const userId = useSelector(selectUserState.details.user_id);
-const userState = useSelector(selectUserState);
-const userId = userState?.details?.user_id;
+  const userState = useSelector(selectUserState);
+  const userId = userState?.details?.user_id;
 
-// Function to handle logout
-const handleLogout = async () => {
-  // try {
-    // await axios.get("http://127.0.0.1:8000/signout/");
-    // dispatch(userActions.logout());
+  const handleLogout = async () => {
     localStorage.removeItem('persist:root');
     window.location = '/login';
-    // navigate("/login");
     console.log("Logout successful.");
-  // } catch (error) {
-  //   console.error("Logout Error:", error);
-  }
+    await axios.get("http://127.0.0.1:8000/signout/");
+  };
 
-  // Navigation links when user is authenticated
   const authenticatedNavigationLinks = [
     { text: "Home", to: "/employer" },
-    { text: "Internships", to: "/pinternships" },
+    { text: "Post Internship", to: "/internshipform" },
     { text: "Settings", to: "/settings" },
   ];
 
@@ -40,25 +32,20 @@ const handleLogout = async () => {
     <>
       <AppBar position="static" color="transparent">
         <Toolbar>
-          <NavItem to="/">
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              sx={{
-                flexGrow: 1,
-                textAlign: "center",
-                "&:hover": { backgroundColor: "transparent" },
-              }}>
-              <img src={logo} alt="Logo" style={{ width: "8rem", marginLeft: 10 }} />
-            </IconButton>
-          </NavItem>
-          <Typography variant="h6" sx={{ marginLeft: 2 }}>
-            Employer
-          </Typography>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              flexGrow: 1,
+              "&:hover": { backgroundColor: "transparent" },
+            }}>
+            <img src={logo} alt="Logo" style={{ width: "8rem", marginLeft: '4%' }} />
+            <Typography variant="h6" sx={{ marginLeft: 1 }}>
+              Employer
+            </Typography>
+          </Box>
 
           {userId ? (
-            // Display navigation links when authenticated
             <Typography
               variant="h6"
               sx={{
@@ -101,7 +88,6 @@ const handleLogout = async () => {
           )}
 
           {userId && (
-            // Display Log Out button when authenticated
             <Button
               variant="outlined"
               color="inherit"

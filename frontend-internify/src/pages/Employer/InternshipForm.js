@@ -38,14 +38,11 @@ const PostInternshipPage = () => {
 
         if (response.status === 201) {
           console.log('Internship Posted Successfully');
-          // Handle success, e.g., show a success message to the user
         } else {
           console.error('Internship Posting failed:', response.data.error);
-          // Handle posting failure, e.g., show an error message to the user
         }
       } catch (error) {
         console.error('API Error:', error);
-        // Handle API error, e.g., show an error message to the user
       }
     },
   });

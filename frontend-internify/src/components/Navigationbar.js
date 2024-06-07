@@ -14,8 +14,7 @@ import {
   List,
   ListItem,
   ListItemText,
-  Menu,
-  MenuItem,
+  Box,
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import logo from "../assets/logo-no-background.png";
@@ -31,7 +30,6 @@ function Navigationbar() {
   const userId = userState?.details?.user_id;
 
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -41,15 +39,19 @@ function Navigationbar() {
     localStorage.removeItem('persist:root');
     window.location = '/login';
     console.log("Logout successful.");
+    await axios.get("http://127.0.0.1:8000/signout/");
   };
 
   const navigationLinks = [
-    { text: "Home", to: "/" },
     { text: "Internships", to: "/internships" },
     { text: "Resume Builder", to: "/resume" },
     { text: "Articles", to: "/articles" },
     { text: "Companies", to: "/companies" },
   ];
+
+  if (!userId) {
+    navigationLinks.unshift({ text: "Home", to: "/" });
+  }
 
   const drawerContent = (
     <List>
@@ -72,7 +74,6 @@ function Navigationbar() {
       <AppBar position="static" color="transparent">
         <Toolbar>
           <Hidden mdUp>
-            {/* Menu icon for mobile screens */}
             <IconButton
               edge="start"
               color="inherit"
@@ -83,22 +84,18 @@ function Navigationbar() {
             </IconButton>
           </Hidden>
 
-          <NavItem to="/">
-            <IconButton
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              sx={{
-                flexGrow: 1,
-                textAlign: "center",
-                "&:hover": { backgroundColor: "transparent" },
-              }}>
-              <img src={logo} alt="Logo" style={{ width: "8rem", marginLeft: 10 }} />
-            </IconButton>
-          </NavItem>
+          <Box
+            sx={{
+              flexGrow: 1,
+              // textAlign: "center",
+              // display: "flex",
+              // justifyContent: "center",
+              "&:hover": { backgroundColor: "transparent" },
+            }}>
+            <img src={logo} alt="Logo" style={{ width: "8rem", marginLeft: '6%', marginTop: '2%' }} />
+          </Box>
 
           <Hidden smDown>
-            {/* Navigation links for tablet and desktop screens */}
             <Typography
               variant="h6"
               sx={{
@@ -119,13 +116,12 @@ function Navigationbar() {
           </Hidden>
 
           <Hidden mdUp>
-            {/* Drawer for mobile screens */}
             <Drawer
               anchor="left"
               open={mobileOpen}
               onClose={handleDrawerToggle}
               ModalProps={{
-                keepMounted: true, // Better open performance on mobile.
+                keepMounted: true,
               }}>
               {drawerContent}
             </Drawer>
@@ -133,7 +129,6 @@ function Navigationbar() {
 
           <Hidden smDown>
             {userId ? (
-              // Display Log Out button when authenticated
               <Button
                 variant="outlined"
                 color="inherit"
@@ -154,7 +149,6 @@ function Navigationbar() {
                 Log Out
               </Button>
             ) : (
-              // Log In and Sign Up buttons for tablet and desktop screens if not authenticated
               <>
                 <Button
                   color="inherit"
