@@ -1,2 +1,8 @@
 config.ini
+<<<<<<< HEAD
+myenv
+media
+Backend/spacy_model
+=======
 media*pyc
+>>>>>>> c3a2bb011cd569d077a41763faa623f65d41d2e3
