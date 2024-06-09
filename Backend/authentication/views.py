@@ -26,6 +26,8 @@ from django.contrib.auth.hashers import check_password
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.middleware.csrf import get_token
 from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_GET
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -423,7 +425,9 @@ def company_reg_success(request):
 def company_dashboard(request):
     return render(request, 'authentication/company_dashboard.html')
 
-@csrf_exempt  # Exempt this view from CSRF protection, as it's providing the token
+# @csrf_exempt 
+@ensure_csrf_cookie
+@require_GET # Exempt this view from CSRF protection, as it's providing the token
 def get_csrf_token(request):
     csrf_token = get_token(request)  # Get the CSRF token
     print(csrf_token)

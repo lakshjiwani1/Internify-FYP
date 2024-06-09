@@ -8,17 +8,18 @@ const ArticlesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [articles, setArticles] = useState([]);
   const [filteredArticles, setFilteredArticles] = useState([]);
+  
 
   useEffect(() => {
     const fetchArticles = async () => {
       try {
         const response = await axios.get('http://127.0.0.1:8000/view_articles/');
-        console.log('API response:', response.data); // Debugging statement
+        console.log('API response:', response.data); 
 
         if (response.data && Array.isArray(response.data.articles)) {
           setArticles(response.data.articles);
-          setFilteredArticles(response.data.articles); // Initialize filteredArticles with all articles
-          console.log('Articles set:', response.data.articles); // Debugging statement
+          setFilteredArticles(response.data.articles); 
+          console.log('Articles set:', response.data.articles); 
         } else {
           console.error('Invalid data format:', response.data);
         }

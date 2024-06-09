@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Grid, Paper, Typography, Box, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Button, Grid, Paper, Typography, Box, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
 import { AddCircleOutline, MoreVert, Edit, Delete } from '@mui/icons-material';
 import { useTheme } from '@mui/system';
 import { Link } from 'react-router-dom';
-import axios from 'axios'; 
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { selectUserState } from '../../store/user/user-slice';
 
 const EmployerDashboard = () => {
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
   const [internships, setInternships] = useState([]);
   const open = Boolean(anchorEl);
+  const user = useSelector(selectUserState);
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -21,17 +24,28 @@ const EmployerDashboard = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log("csrf token: ", user.token)
       try {
-        const response = await axios.get('http://127.0.0.1:8000/internship_list/');
-        setInternships(response.data);
-        console.log("Internships displayed.") 
+        const response = await axios.get('http://127.0.0.1:8000/internship_list/', {
+          headers: {
+            'X-CSRFToken': user.token,
+            'Authorization': `Bearer ${user.token}`, // Ensure the user is authenticated
+          },
+        });
+        const data = response.data;
+        console.log(data);
+        if (Array.isArray(data)) {
+          setInternships(data);
+        } else {
+          console.error('Invalid data format:', data);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
 
     fetchData();
-  }, []);
+  }, [user.token, user.token]);
 
   return (
     <Grid container spacing={2} sx={{ width: '80%', margin: 'auto' }}>
@@ -81,10 +95,10 @@ const EmployerDashboard = () => {
                 {internships.map((internship) => (
                   <TableRow key={internship.id}>
                     <TableCell>{internship.title}</TableCell>
-                    <TableCell>{internship.startDate}</TableCell>
-                    <TableCell>{internship.endDate}</TableCell>
+                    <TableCell>{internship.start_date}</TableCell>
+                    <TableCell>{internship.end_date}</TableCell>
                     <TableCell>{internship.location}</TableCell>
-                    <TableCell>{internship.applicationDeadline}</TableCell>
+                    <TableCell>{internship.application_deadline}</TableCell>
                     <TableCell>
                       <IconButton size="small" onClick={(event) => handleClick(event, internship)}>
                         <MoreVert />

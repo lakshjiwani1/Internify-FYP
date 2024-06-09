@@ -1,33 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Grid, Typography, TextField, Button, MenuItem, IconButton } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material'; 
-import { useHistory, useNavigate } from 'react-router-dom'; // Import useHistory for redirection
-import axios from 'axios'; // Import Axios for HTTP requests
+import { ArrowBack } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { selectUserState } from '../../store/user/user-slice';
 
 const ArticleForm = () => {
     const [title, setTitle] = useState('');
     const [content, setContent] = useState('');
     const [topic, setTopic] = useState('');
-    const navigate = useNavigate(); // Initialize useHistory
+    const navigate = useNavigate();
+    const user = useSelector(selectUserState);
+
+    // Function to get CSRF token from cookies
+    const getCsrfToken = () => {
+        return user.token;
+    };
 
     const handlePostArticle = async () => {
+        if (!user.isAuthenticated) {
+            navigate('/login');
+            return;
+        }
+
         try {
-            // Send a POST request to add the article
-            await axios.post('http://127.0.0.1:8000/add_article/', {
+            const csrfToken = getCsrfToken();
+            if (!csrfToken) {
+                console.error('CSRF token not found');
+                return;
+            }
+
+            const response = await axios.post('http://127.0.0.1:8000/add_article/', {
                 title: title,
                 content: content,
-                topic: topic
+                topic: topic,
+                author: user.details.user_id, 
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${user.token}`,
+                    'X-CSRFToken': csrfToken,
+                },
+                withCredentials: true, 
             });
 
-            // Reset the form fields after successfully posting the article
-            setTitle('');
-            setContent('');
-            setTopic('');
-            
-            // Redirect back to the '/articles' page
-            navigate('/articles');
+            console.log('API response:', response.data);
+
+            if (response.data.success) {
+                console.log("Article Posted Successfully");
+                setTitle('');
+                setContent('');
+                setTopic('');
+                navigate('/articles');
+            } else {
+                console.error('Error posting article:', response.data.message);
+            }
         } catch (error) {
-            console.error('Error posting article:', error);
+            console.error('Error posting article:', error.response ? error.response.data : error.message);
         }
     };
 
@@ -35,8 +64,8 @@ const ArticleForm = () => {
         <Container maxWidth="md" sx={{ marginTop: '2rem', marginBottom: '2rem', width: '70%' }}>
             <Grid container spacing={2} justifyContent="center">
                 <Grid item xs={12} sx={{ marginBottom: '1rem' }}>
-                    <IconButton onClick={() => {window.history.back();}} sx={{ marginBottom: '1rem' }}>
-                        <ArrowBack /> 
+                    <IconButton onClick={() => { window.history.back(); }} sx={{ marginBottom: '1rem' }}>
+                        <ArrowBack />
                     </IconButton>
                     <Typography variant="h4" sx={{ marginBottom: '1rem', textAlign: 'center' }}>Write Your Article</Typography>
                     <Typography variant="h6" sx={{ marginBottom: '0.5rem' }}>Article Title</Typography>

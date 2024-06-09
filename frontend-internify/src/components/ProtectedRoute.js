@@ -9,7 +9,7 @@ const ProtectedRoute = ({ children, redirectTo }) => {
   const userId = userState.details.user_id;
   const userType = userState.details.user_type;
 
-  // Check the userId and redirect accordingly
+
   if (userType === 1) {
     return <Navigate to="/internships" />;
   } else if (userType === 2) {

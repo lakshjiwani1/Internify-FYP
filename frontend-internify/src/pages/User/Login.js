@@ -1,3 +1,5 @@
+// LoginForm.js
+
 import React from "react";
 import { useFormik } from "formik";
 import { useDispatch } from "react-redux";
@@ -25,24 +27,21 @@ const LoginForm = () => {
     onSubmit: async (values) => {
       try {
         console.log("Form Submitted", values);
-        // Send a request to obtain the CSRF token
         const csrfResponse = await axios.get(
-          "http://127.0.0.1:8000/signin/get-csrf-token/"
+          "http://127.0.0.1:8000/signin/get-csrf-token/",
+          { withCredentials: true }
         );
         const csrfToken = csrfResponse.data.csrf_token;
         console.log(csrfToken);
-        // Use the obtained CSRF token in the login request
+        
         const loginResponse = await axios.post("http://127.0.0.1:8000/signin/", values, {
           headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": csrfToken,
           },
+          withCredentials: true,
         });
         console.log("login Response:", loginResponse);
-        // console.log("redirection", loginResponse.data.redirect);
-        // console.log("status: ", loginResponse.status);
-        // console.log("API Response:", loginResponse.data);
-
 
         if (loginResponse.status === 200) {
           console.log("login Success");

@@ -1,14 +1,17 @@
 import React from 'react';
-import { Container, Grid, Typography, FormControlLabel, Radio, RadioGroup, FormControl, FormLabel, Button, TextareaAutosize, TextField } from '@mui/material';
+import { Container, Grid, Typography, FormControlLabel, Radio, RadioGroup, FormControl, FormLabel, Button, TextField } from '@mui/material';
 import { useFormik } from 'formik';
 import { EStyledField } from '../../misc/MUIComponent';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import * as Yup from 'yup';
-
+import { useSelector } from 'react-redux';
+import { selectUserState } from "../../store/user/user-slice";
+import { format } from 'date-fns';
 
 const PostInternshipPage = () => {
   const navigate = useNavigate();
+  const user = useSelector(selectUserState);
 
   const formik = useFormik({
     initialValues: {
@@ -32,11 +35,27 @@ const PostInternshipPage = () => {
       applicationDeadline: Yup.string().required('Application Deadline is required'),
     }),
     onSubmit: async values => {
+      console.log("token", user.token);
+      console.log("User ID", user.details.user_id);
+      console.log("User Type", user.details.user_type);
       try {
-        const response = await axios.post('http://127.0.0.1:8000/create_internship/', values);
+        // Format the dates to YYYY/MM/DD
+        const formattedValues = {
+          ...values,
+          startDate: format(new Date(values.startDate), 'yyyy/MM/dd'),
+          endDate: format(new Date(values.endDate), 'yyyy/MM/dd'),
+          applicationDeadline: format(new Date(values.applicationDeadline), 'yyyy/MM/dd')
+        };
+
+        const response = await axios.post('http://127.0.0.1:8000/create_internship/', formattedValues, {
+          headers: {
+            'X-CSRFToken': user.token, 
+            'X-User-ID': user.details.user_id, 
+          },
+        });
         console.log('Internship Response:', response.data);
 
-        if (response.status === 201) {
+        if (response.status === 200) {
           console.log('Internship Posted Successfully');
         } else {
           console.error('Internship Posting failed:', response.data.error);
@@ -119,6 +138,8 @@ const PostInternshipPage = () => {
               name="location"
               value={formik.values.location}
               onChange={formik.handleChange}
+              error={formik.touched.location && Boolean(formik.errors.location)}
+              helperText={formik.touched.location && formik.errors.location}
             />
           </Grid>
           <Grid item xs={12}>
@@ -131,6 +152,8 @@ const PostInternshipPage = () => {
               name="requiredSkills"
               value={formik.values.requiredSkills}
               onChange={formik.handleChange}
+              error={formik.touched.requiredSkills && Boolean(formik.errors.requiredSkills)}
+              helperText={formik.touched.requiredSkills && formik.errors.requiredSkills}
             />
           </Grid>
           <Grid item xs={12}>
@@ -145,6 +168,8 @@ const PostInternshipPage = () => {
               name="description"
               value={formik.values.description}
               onChange={formik.handleChange}
+              error={formik.touched.description && Boolean(formik.errors.description)}
+              helperText={formik.touched.description && formik.errors.description}
             />
           </Grid>
           <Grid item xs={12}>
@@ -158,9 +183,11 @@ const PostInternshipPage = () => {
               name="applicationDeadline"
               value={formik.values.applicationDeadline}
               onChange={formik.handleChange}
+              error={formik.touched.applicationDeadline && Boolean(formik.errors.applicationDeadline)}
+              helperText={formik.touched.applicationDeadline && formik.errors.applicationDeadline}
             />
           </Grid>
-          <Grid item xs={12} md={6} >
+          <Grid item xs={12} md={6}>
             <FormControl component="fieldset" sx={{ marginBottom: '1rem' }}>
               <FormLabel component="legend">Published</FormLabel>
               <RadioGroup
@@ -191,7 +218,7 @@ const PostInternshipPage = () => {
             </FormControl>
           </Grid>
           <Grid item xs={12}>
-            <Button variant="contained" color="primary" type="submit" sx={{ width: '50%', marginTop: '1rem', }}>
+            <Button variant="contained" color="primary" type="submit" sx={{ width: '50%', marginTop: '1rem' }}>
               Submit
             </Button>
           </Grid>

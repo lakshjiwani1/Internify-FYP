@@ -8,9 +8,13 @@ from rest_framework.response import Response
 from .models import Article
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_protect
 
 
 # Create your views here.
+# @csrf_protect
+# @login_required
 @csrf_exempt
 def add_article(request):
     if request.method == 'POST':
@@ -76,3 +80,4 @@ def delete_article(request, article_id):
         return JsonResponse({'success': True})
     else:
         return JsonResponse({'success': False, 'message': 'You are not authorized to delete this article.'}, status=403)
+    

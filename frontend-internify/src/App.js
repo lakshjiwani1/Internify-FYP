@@ -10,13 +10,14 @@ import { CssBaseline } from "@mui/material";
 import Login from "./pages/User/Login";
 import EmployerSignup from "./pages/Employer/EmployerSignup";
 import Eroot from "./pages/Employer/Eroot";
-// import EmpLogin from "./pages/Employer/EmpLogin";
 import EmployerDashboard from "./pages/Employer/Dashboard";
 import InternshipForm from "./pages/Employer/InternshipForm";
 import Articles from "./pages/User/Articles";
 import ArticleForm from "./pages/User/ArticleForm";
 import Companies from "./pages/User/Companies";
-import ProtectedRoute from "./components/ProtectedRoute"; // Import the ProtectedRoute component
+import ProtectedRoute from "./components/ProtectedRoute"; 
+import Resume from "./pages/User/ResumePage";
+import SubmitResume from "./pages/User/SubmitResume";
 
 const userRoutes = [
   {
@@ -50,6 +51,8 @@ const userRoutes = [
   { path: '/articles', element: <Articles /> },
   { path: '/articleform', element: <ArticleForm /> },
   { path: '/companies', element: <Companies /> },
+  { path: "/resume", element: <Resume/>},
+  { path: "/submittedresume", element: <SubmitResume/>},
 ];
 
 const employerRoutes = [

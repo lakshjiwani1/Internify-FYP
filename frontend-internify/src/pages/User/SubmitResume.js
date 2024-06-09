@@ -43,7 +43,7 @@ const SubmitResume = () => {
         </Grid>
 
         <Button variant="contained" color="primary" sx={{ marginTop: '2rem' }}>
-          Submit
+          Verify
         </Button>
       </Box>
 
