@@ -46,6 +46,7 @@ const PostInternshipPage = () => {
           endDate: format(new Date(values.endDate), 'yyyy/MM/dd'),
           applicationDeadline: format(new Date(values.applicationDeadline), 'yyyy/MM/dd')
         };
+        console.log("Formatted Start Date:", formattedValues.startDate);
 
         const response = await axios.post('http://127.0.0.1:8000/create_internship/', formattedValues, {
           headers: {
@@ -94,6 +95,7 @@ const PostInternshipPage = () => {
               onChange={formik.handleChange}
               error={formik.touched.title && Boolean(formik.errors.title)}
               helperText={formik.touched.title && formik.errors.title}
+              
             />
           </Grid>
           <Grid item xs={12} md={6}>

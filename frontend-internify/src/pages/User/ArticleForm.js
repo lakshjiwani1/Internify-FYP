@@ -30,7 +30,7 @@ const ArticleForm = () => {
                 console.error('CSRF token not found');
                 return;
             }
-
+            
             const response = await axios.post('http://127.0.0.1:8000/add_article/', {
                 title: title,
                 content: content,
@@ -43,7 +43,7 @@ const ArticleForm = () => {
                 },
                 withCredentials: true, 
             });
-
+            console.log('Token ',csrfToken)
             console.log('API response:', response.data);
 
             if (response.data.success) {

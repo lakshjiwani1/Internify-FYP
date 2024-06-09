@@ -27,6 +27,7 @@ def add_article(request):
             return JsonResponse({'errors': errors}, status=400)
 
         try:
+            print(f"User: {request.user}")
             article = form.save(commit=False)
             article.author = request.user
             article.save()

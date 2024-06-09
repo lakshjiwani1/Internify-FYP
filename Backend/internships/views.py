@@ -16,8 +16,9 @@ def is_company(user):
     return user.is_authenticated and user.user_type == 2
 
 
+# @csrf_exempt
+# @user_passes_test(is_company)
 @csrf_exempt
-@user_passes_test(is_company)
 def create_internship(request):
     message = []                                
 
