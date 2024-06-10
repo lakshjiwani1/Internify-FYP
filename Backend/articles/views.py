@@ -9,13 +9,14 @@ from .models import Article
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 
 
 # Create your views here.
-# @csrf_protect
+# @csrf_exempt
 # @login_required
-@csrf_exempt
+# @csrf_protect
+# @ensure_csrf_cookie
 def add_article(request):
     if request.method == 'POST':
         form = ArticleForm(request.POST)
@@ -27,6 +28,8 @@ def add_article(request):
             return JsonResponse({'errors': errors}, status=400)
 
         try:
+            csrf_token = request.COOKIES.get('csrftoken')
+            print(f"csrf token: {csrf_token}")
             print(f"User: {request.user}")
             article = form.save(commit=False)
             article.author = request.user

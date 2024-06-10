@@ -84,7 +84,7 @@ ROOT_URLCONF = 'Internify.urls'
 config = configparser.ConfigParser()
 config.read('config.ini')
 
-CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
 # EMAIL_HOST_USER = config['DEFAULT']['EMAIL_HOST_USER']
 # EMAIL_FROM = config['DEFAULT']['EMAIL_FROM']
@@ -185,6 +185,13 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8080"
 ]
 
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost:8000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+    "http://localhost:8080"
+]
+
 from corsheaders.defaults import default_headers
 CORS_ALLOW_HEADERS = list(default_headers) + [
     'X-CSRFToken',
@@ -202,6 +209,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:8080"
 ]
+CORS_ORIGIN_ALLOW_ALL = True
 
 # DEBUG_TOOLBAR_PANELS = [
 #     'debug_toolbar.panels.history.HistoryPanel',

@@ -62,6 +62,7 @@ def view_all_internships(request):
 
 
 @user_passes_test(is_student)
+@csrf_exempt
 def apply_to_internship(request, internship_id):
     messages = []
     internship = get_object_or_404(Internships, pk=internship_id)
@@ -73,12 +74,10 @@ def apply_to_internship(request, internship_id):
                 messages.append('You have already applied to this internship.')
                 # return render(request, 'student/apply_error.html')
                 return render(request, 'students/apply_to_internship.html', {'internship': internship, 'messages': messages})
-
             else:
                 messages.append(f"Applied to {internship.title} internship successfully")
-            
             # Create a new application
-            application = Application(internship=internship, student=request.user.student, cv_file=student.cv_file)
+            application = Application(internship=internship, student=student, cv_file=student.cv_file)
             application.save()
             
             return render(request, 'students/apply_success.html', {'internship_title': internship.title, 'messages': messages})

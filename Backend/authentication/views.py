@@ -27,7 +27,8 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.middleware.csrf import get_token
 from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
-from django.views.decorators.http import require_GET
+from django.views.decorators.http import require_GET, require_POST
+from django.http import HttpResponse
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -237,6 +238,8 @@ def get_user_information(username):
         return None
 
 @csrf_exempt
+# @csrf_protect
+# @require_POST 
 def signin(request):
     if request.user.is_authenticated:
         return JsonResponse({'success': True, 'redirect': '/'})
@@ -268,6 +271,8 @@ def signin(request):
 
         if user is not None:
             login(request, user)
+            csrf_token = request.COOKIES.get('csrftoken')
+            print(f"csrf token: {csrf_token}")
             User = get_user_model()
             try:
                 user = User.objects.get(username=username)
@@ -426,7 +431,7 @@ def company_dashboard(request):
     return render(request, 'authentication/company_dashboard.html')
 
 # @csrf_exempt 
-@ensure_csrf_cookie
+# @ensure_csrf_cookie
 @require_GET # Exempt this view from CSRF protection, as it's providing the token
 def get_csrf_token(request):
     csrf_token = get_token(request)  # Get the CSRF token

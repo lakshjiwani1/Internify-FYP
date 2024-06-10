@@ -11,3 +11,8 @@ class AddInternshipForm(forms.ModelForm):
     class Meta:
         model = Internships
         fields = ['title', 'start_date', 'end_date', 'location', 'required_skills', 'qualifications', 'application_deadline', 'is_published', 'accept_applications']
+
+
+class InternshipSearchForm(forms.Form):
+    search_by = forms.ChoiceField(choices=[('company_name', 'Company Name'), ('internship_name', 'Internship Name')])
+    query = forms.CharField()

@@ -11,6 +11,8 @@ from rest_framework.decorators import api_view
 from django.contrib import messages
 from django.core.serializers import serialize
 import json
+from .forms import InternshipSearchForm
+
 
 def is_company(user):
     return user.is_authenticated and user.user_type == 2
@@ -50,31 +52,45 @@ def create_internship(request):
 
 
 # @user_passes_test(is_company)
-@api_view(['GET'])
+# @api_view(['GET'])
 def internship_list(request):
-    try:
-        # print("User Signed In:", request.user.username)
-        # print("Getting Internship List")
-        # internships = request.user.companyauth.internships.order_by('-created_at')
-        # print("Data stored in internships variable")
-        # serializer = InternshipSerializer(internships, many=True)
-        # print("Returning Data")
-        # return Response(serializer.data)  
-        internships = request.user.companyauth.internships.order_by('-created_at')
-        context = {'internships': internships}  # Initialize context with an empty list
-        print(f"Request_Body: {request.body}")
-        print(internships)
-        internships_json = serialize('json', internships)
-        print(f"Internships Json: {internships_json}")
-        internships_data = json.loads(internships_json)
-        print(f"Internships data: {internships_data}")
-        context = {'internships': internships_data}
-        print(f"Context: {context}")
-        print(f"Json Response: {JsonResponse(context)}")
-        return JsonResponse(context)
-    except Exception as e:
-        print("Error occured")
-        return JsonResponse({'error': str(e)}, status=500)  
+    form = InternshipSearchForm()
+    internships = Internships.objects.filter(is_published=True).order_by('-created_at')
+    context = {'internships': internships}  # Initialize context with an empty list
+    print(f"Request_Body: {request.body}")
+    print(internships)
+    internships_json = serialize('json', internships)
+    print(f"Internships Json: {internships_json}")
+
+    internships_data = json.loads(internships_json)
+    print(f"Internships data: {internships_data}")
+
+    context = {'internships': internships_data}
+    print(f"Context: {context}")
+    print(f"Json Response: {JsonResponse(context)}")
+    # if request.method == 'GET':
+    #     form = InternshipSearchForm(request.GET)
+    #     if form.is_valid():
+    #         search_by = request.GET.get('search_by', 'company_name')  # Default to searching by company name
+    #         query = request.GET.get('query', '')
+    #         internships_json = serialize('json', internships)
+    #         internships_data = json.loads(internships_json)
+
+    #         # Start with all published internships
+    #         internships = Internships.objects.filter(is_published=True).order_by('-created_at')
+    #         internships_list = [model_to_dict(internship) for internship in internships]
+    #         # Perform the search based on the selected option
+    #         if query:
+    #             if search_by == 'company_name':
+    #                 internships = internships.filter(company__name__icontains=query)
+    #             elif search_by == 'internship_name':
+    #                 internships = internships.filter(title__icontains=query)
+
+    #         context = {'query': query, 'internships': internships_data}
+
+    # return render(request, 'students/internship_list.html', context)
+    return JsonResponse(context)
+  
 
 def internship_detail(request, pk):
     internship = get_object_or_404(Internships, pk=pk)
