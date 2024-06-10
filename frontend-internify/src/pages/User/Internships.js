@@ -1,17 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Card, CardContent, Box, TextField, Button } from '@mui/material';
+import { Container, Typography, Card, CardContent, Box, TextField, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import WorkIcon from '@mui/icons-material/Work';
 
 const Internship = () => {
   const [internships, setInternships] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [filteredInternships, setFilteredInternships] = useState([]);
+  const [selectedInternship, setSelectedInternship] = useState(null);
+  const [open, setOpen] = useState(false);
 
   const handleSearch = () => {
     const filtered = internships.filter((internship) =>
       internship.fields.title.toLowerCase().includes(searchText.toLowerCase())
     );
     setFilteredInternships(filtered);
+  };
+
+  const handleClickOpen = (internship) => {
+    setSelectedInternship(internship);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedInternship(null);
   };
 
   useEffect(() => {
@@ -32,7 +44,7 @@ const Internship = () => {
     };
 
     fetchData();
-  }, []); 
+  }, []);
 
   return (
     <Container maxWidth="lg">
@@ -62,38 +74,20 @@ const Internship = () => {
                 <Typography variant="h6" gutterBottom>
                   {internship.fields.title}
                 </Typography>
-                {/* <Typography variant="body2" color="textPrimary">
-                  Company Name: {internship.fields.company.name}
-                </Typography> */}
                 <Typography variant="body2" color="textPrimary">
                   Start Date: {internship.fields.start_date}
                 </Typography>
                 <Typography variant="body2" color="textPrimary">
-                  End Date: {internship.fields.end_date}
-                </Typography>
-                <Typography variant="body2" color="textPrimary">
                   Location: {internship.fields.location}
                 </Typography>
-                <Typography variant="body2" color="textPrimary">
-                  Required Skills: {internship.fields.required_skills}
-                </Typography>
-                <Typography variant="body2" color="textPrimary">
-                  Qualifications: {internship.fields.qualifications}
-                </Typography>
-                <Typography variant="body2" color="textPrimary">
-                  Application Deadline: {internship.fields.application_deadline}
-                </Typography>
-                {/* <Typography variant="body2" color="textPrimary">
-                  {internship.fields.accept_applications ? 'Company is accepting applications' : 'Company is not accepting applications at the moment'}
-                </Typography> */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'right', marginTop: 3 }}>
                   <Button
                     variant="contained"
                     size="large"
-                    startIcon={<WorkIcon />}
-                    sx={{ width: "110px", height: "37px" }}
+                    sx={{ width: "130px", height: "37px" }}
+                    onClick={() => handleClickOpen(internship)}
                   >
-                    Apply
+                    Apply Now
                   </Button>
                 </Box>
               </CardContent>
@@ -102,6 +96,42 @@ const Internship = () => {
         ))}
       </Box>
 
+      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ textAlign: 'center'}}>Internship Details</DialogTitle>
+        <DialogContent>
+          {selectedInternship && (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="h6">{selectedInternship.fields.title}</Typography>
+              <Typography variant="body2" color="textPrimary">
+                Start Date: {selectedInternship.fields.start_date}
+              </Typography>
+              <Typography variant="body2" color="textPrimary">
+                End Date: {selectedInternship.fields.end_date}
+              </Typography>
+              <Typography variant="body2" color="textPrimary">
+                Location: {selectedInternship.fields.location}
+              </Typography>
+              <Typography variant="body2" color="textPrimary">
+                Required Skills: {selectedInternship.fields.required_skills}
+              </Typography>
+              <Typography variant="body2" color="textPrimary">
+                Qualifications: {selectedInternship.fields.qualifications}
+              </Typography>
+              <Typography variant="body2" color="textPrimary">
+                Application Deadline: {selectedInternship.fields.application_deadline}
+              </Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ paddingRight: 2, paddingTop: 1 }}>
+          <Button onClick={handleClose} color="primary" sx={{ marginRight: 1, marginBottom: 3 }}>
+            Cancel
+          </Button>
+          <Button onClick={() => console.log('Applying for internship')} color="primary" variant="contained" startIcon={<WorkIcon />} sx={{ marginBottom: 3, marginRight: 3 }}>
+            Apply
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
