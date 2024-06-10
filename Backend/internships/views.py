@@ -106,12 +106,7 @@ def internship_detail(request, pk):
         'accept_application': internship.accept_applications
     }
     print(internship_data)
-    # internships_json = serialize('json', internship)
-    # internships_data = json.loads(internships_json)
-    # context = {'internships': internships_data}
-    # return JsonResponse(context)
     return JsonResponse(internship_data)
-    # return JsonResponse(internship_data)
 
 @csrf_exempt
 # @user_passes_test(is_company)

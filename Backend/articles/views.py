@@ -48,7 +48,8 @@ def add_article(request):
 
 # @api_view(['GET'])
 def view_articles(request):
-    articles = Article.objects.all().values()  # Retrieve all articles as dictionaries
+    # Filter articles by student_id (assuming a ForeignKey relationship)
+    articles = Article.objects.filter(author__id=48).values()
     return JsonResponse({'articles': list(articles)})
 
 @csrf_exempt
