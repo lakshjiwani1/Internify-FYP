@@ -3,12 +3,16 @@ import { Box, Button, Typography, Snackbar, Alert } from '@mui/material';
 import { Flexbox } from '../../misc/MUIComponent';
 import { useNavigate } from 'react-router-dom';
 import resumeImage from '../../assets/resume.png';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { selectUserState } from '../../store/user/user-slice';
 
 const Resume = () => {
   const [file, setFile] = useState(null);
   const [alertOpen, setAlertOpen] = useState(false);
   const [fileAlertOpen, setFileAlertOpen] = useState(false);
   const navigate = useNavigate();
+  const user = useSelector(selectUserState);
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -28,11 +32,41 @@ const Resume = () => {
     setFileAlertOpen(false);
   };
 
-  const handleSubmit = () => {
+  const getCsrfToken = () => {
+    return user.token;
+  };
+
+  const handleSubmit = async () => {
     if (!file) {
       setFileAlertOpen(true);
-    } else {
-      navigate('/submittedresume');
+      return;
+    }
+
+    const csrfToken = getCsrfToken();
+    if (!csrfToken) {
+      console.error('CSRF token not found');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('resume', file);
+
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/resume/analyze_resume', formData, {
+        headers: {
+          'Authorization': `Bearer ${user.token}`,
+          'X-CSRFToken': csrfToken,
+        },
+        withCredentials: true,
+      });
+
+      if (response.data.success) {
+        navigate('/submittedresume');
+      } else {
+        console.error('Error submitting resume:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error submitting resume:', error.response ? error.response.data : error.message);
     }
   };
 

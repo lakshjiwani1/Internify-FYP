@@ -51,6 +51,11 @@ const ArticlesPage = () => {
               Write Article
             </Button>
           </Link>
+          <Link to="/myarticles" style={{ textDecoration: 'none' }}>
+            <Button variant="contained" sx={{ marginLeft: '1rem' }}>
+              My Articles
+            </Button>
+          </Link>
         </Grid>
         <Grid item xs={12} sx={{ display: 'flex', alignItems: 'center', marginBottom: '1rem' }}>
           <TextField
