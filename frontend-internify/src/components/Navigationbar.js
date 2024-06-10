@@ -47,11 +47,12 @@ function Navigationbar() {
     { text: "Resume Builder", to: "/resume" },
     { text: "Articles", to: "/articles" },
     { text: "Companies", to: "/companies" },
-    { text: "My Applications", to: "/myapplications" },
   ];
 
   if (!userId) {
     navigationLinks.unshift({ text: "Home", to: "/" });
+  } else {
+    navigationLinks.push({ text: "My Applications", to: "/myapplications" });
   }
 
   const drawerContent = (

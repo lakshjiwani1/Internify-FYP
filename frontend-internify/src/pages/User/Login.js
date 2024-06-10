@@ -1,10 +1,8 @@
-// LoginForm.js
-
-import React from "react";
+import React, { useState } from "react";
 import { useFormik } from "formik";
 import { useDispatch } from "react-redux";
 import { userActions } from "../../store/user/user-slice";
-import { Box, Button, Grid, Typography, useMediaQuery } from "@mui/material";
+import { Box, Button, Grid, Typography, useMediaQuery, Backdrop, CircularProgress } from "@mui/material";
 import img from "../../assets/login img.jpeg";
 import { Link, useNavigate } from "react-router-dom";
 import { StyledField, Flexbox } from "../../misc/MUIComponent";
@@ -14,6 +12,7 @@ import * as Yup from "yup";
 const LoginForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -26,6 +25,7 @@ const LoginForm = () => {
     }),
     onSubmit: async (values) => {
       try {
+        setLoading(true); // Start loading
         console.log("Form Submitted", values);
         const csrfResponse = await axios.get(
           "http://127.0.0.1:8000/signin/get-csrf-token/",
@@ -38,7 +38,7 @@ const LoginForm = () => {
           headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": csrfToken,
-            "csrftoken": csrfToken
+            "csrftoken" : csrfToken
           },
           withCredentials: true,
         });
@@ -62,6 +62,8 @@ const LoginForm = () => {
         }
       } catch (error) {
         console.error("API Error:", error);
+      } finally {
+        setLoading(false); // Stop loading
       }
     },
   });
@@ -75,6 +77,7 @@ const LoginForm = () => {
         minHeight: "100vh",
         padding: "2rem",
         marginBottom: 10,
+        position: "relative", // Ensure the backdrop covers the whole screen
       }}>
       <Typography
         variant="h4"
@@ -156,6 +159,13 @@ const LoginForm = () => {
           </form>
         </Grid>
       </Grid>
+
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Flexbox>
   );
 };
