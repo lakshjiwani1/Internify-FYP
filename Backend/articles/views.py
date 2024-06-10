@@ -17,10 +17,12 @@ from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 # @login_required
 # @csrf_protect
 # @ensure_csrf_cookie
+@csrf_exempt
 def add_article(request):
     if request.method == 'POST':
         form = ArticleForm(request.POST)
         form.load_json_data(request.body)
+        print(f"csrf: {request.COOKIES.get('csrftoken')}")
         try:
             form.full_clean()
         except form.ValidationError as e:
@@ -32,7 +34,8 @@ def add_article(request):
             print(f"csrf token: {csrf_token}")
             print(f"User: {request.user}")
             article = form.save(commit=False)
-            article.author = request.user
+            article.author_id = 48
+            # article.author = request.user.id
             article.save()
             return JsonResponse({'success': True})
         except AttributeError as e:

@@ -40,6 +40,8 @@ const ArticleForm = () => {
                 headers: {
                     'Authorization': `Bearer ${user.token}`,
                     'X-CSRFToken': csrfToken,
+                    // 'Cookie': csrfToken,
+                    // 'csrfToken': csrfToken
                 },
                 withCredentials: true, 
             });

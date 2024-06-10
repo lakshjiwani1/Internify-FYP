@@ -38,6 +38,7 @@ const LoginForm = () => {
           headers: {
             "Content-Type": "application/json",
             "X-CSRFToken": csrfToken,
+            "csrftoken": csrfToken
           },
           withCredentials: true,
         });

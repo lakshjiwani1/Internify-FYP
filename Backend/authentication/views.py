@@ -237,9 +237,9 @@ def get_user_information(username):
     except User.DoesNotExist:
         return None
 
-@csrf_exempt
 # @csrf_protect
 # @require_POST 
+@csrf_exempt
 def signin(request):
     if request.user.is_authenticated:
         return JsonResponse({'success': True, 'redirect': '/'})
