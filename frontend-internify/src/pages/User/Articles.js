@@ -1,25 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Typography, TextField, Button, Card, CardContent } from '@mui/material';
+import { Container, Grid, Typography, TextField, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { Search, Add } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
-import axios from 'axios'; 
+import axios from 'axios';
 
 const ArticlesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [articles, setArticles] = useState([]);
   const [filteredArticles, setFilteredArticles] = useState([]);
-  
+  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchArticles = async () => {
       try {
         const response = await axios.get('http://127.0.0.1:8000/view_articles/');
-        console.log('API response:', response.data); 
+        console.log('API response:', response.data);
 
         if (response.data && Array.isArray(response.data.articles)) {
           setArticles(response.data.articles);
-          setFilteredArticles(response.data.articles); 
-          console.log('Articles set:', response.data.articles); 
+          setFilteredArticles(response.data.articles);
+          console.log('Articles set:', response.data.articles);
         } else {
           console.error('Invalid data format:', response.data);
         }
@@ -40,6 +41,16 @@ const ArticlesPage = () => {
   const handleTopicSelection = (topic) => {
     const filtered = articles.filter(article => article.topic === topic);
     setFilteredArticles(filtered);
+  };
+
+  const handleClickOpen = (article) => {
+    setSelectedArticle(article);
+    setDialogOpen(true);
+  };
+
+  const handleClose = () => {
+    setDialogOpen(false);
+    setSelectedArticle(null);
   };
 
   return (
@@ -73,14 +84,15 @@ const ArticlesPage = () => {
         <Grid item xs={12}>
           <Typography variant="h5" sx={{ textAlign: 'center', marginBottom: '2rem' }}>Articles</Typography>
           <Grid container spacing={2}>
-            {articles.length > 0 ? (
-              articles.map((article) => (
+            {filteredArticles.length > 0 ? (
+              filteredArticles.map((article) => (
                 <Grid item xs={12} md={6} key={article.id}>
-                  <Card>
+                  <Card onClick={() => handleClickOpen(article)} sx={{ cursor: 'pointer', height: '150px', overflow: 'hidden' }}>
                     <CardContent>
-                      <Typography variant="h6">{article.title}</Typography>
-                      <Typography variant="subtitle1">Topic: {article.topic}</Typography>
-                      <Typography variant="body2" sx={{ marginBottom: '1rem' }}>{article.content}</Typography>
+                      <Typography variant="h6" noWrap>{article.title}</Typography>
+                      <Typography variant="body2" sx={{ marginBottom: '1rem', height: '60px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {article.content.length > 100 ? article.content.substring(0, 100) + '...' : article.content}
+                      </Typography>
                     </CardContent>
                   </Card>
                 </Grid>
@@ -91,6 +103,20 @@ const ArticlesPage = () => {
           </Grid>
         </Grid>
       </Grid>
+
+      <Dialog open={dialogOpen} onClose={handleClose}>
+        <DialogTitle>{selectedArticle?.title}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {selectedArticle?.content}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

@@ -52,6 +52,7 @@ const userRoutes = [
   },
   { path: '/articles', element: <Articles /> },
   { path: '/articleform', element: <ArticleForm /> },
+  { path: '/articleform/:id', element: <ArticleForm /> },
   { path: '/companies', element: <Companies /> },
   { path: "/resume", element: <Resume/>},
   { path: "/submittedresume", element: <SubmitResume/>},

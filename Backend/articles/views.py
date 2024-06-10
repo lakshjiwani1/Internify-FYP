@@ -74,7 +74,8 @@ def update_article(request, article_id):
         return render(request, 'internships/update_article.html', {'form': form})
     # else:
     #     # User is not authorized to edit the article
-    #     return JsonResponse({'success': False, 'message': 'You are not authorized to edit this article.'}, status=403)
+    #     return JsonResponse({'success': False, 'message': 'You are not authorized to edit this article.'}, status=403)
+    
     
 @csrf_exempt
 def delete_article(request, article_id):
@@ -87,5 +88,4 @@ def delete_article(request, article_id):
     article.delete()
     return JsonResponse({'success': True})
     # else:
-    #     return JsonResponse({'success': False, 'message': 'You are not authorized to delete this article.'}, status=403)
-    
+    #     return JsonResponse({'success': False, 'message': 'You are not authorized to delete this article.'}, status=403)
