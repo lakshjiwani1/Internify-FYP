@@ -99,26 +99,41 @@ def internship_detail(request, pk):
 
 @csrf_exempt
 # @user_passes_test(is_company)
+
 def update_internship(request, pk):
     message = []
+    print(f"Line 104")
     internship = get_object_or_404(Internships, pk=pk)
+    print(f"pk: {pk}")
+    print(f"internship: {internship}")
 
     if request.method == 'POST':
-        form = AddInternshipForm(request.POST, instance=internship)
-        form.load_json_data(request.body)
+        print("Line 108 Update Internship")
+        
+        # Log the request body
+        try:
+            body_data = json.loads(request.body)
+            print(f"Received request body: {body_data}")
+        except json.JSONDecodeError as e:
+            print(f"Error decoding JSON: {e}")
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        
+        form = AddInternshipForm(body_data, instance=internship)
+        print("Line 110 Update Internship")
+        print(f"Form: {form}")
+
         try:
             form.full_clean()
         except form.ValidationError as e:
             errors = e.message_dict
-            return JsonResponse({'errors':errors}, status=400)
+            return JsonResponse({'errors': errors}, status=400)
         
         try:
             updated_internship = form.save(commit=False)
-            # updated_internship.company = request.user.companyauth
             updated_internship.save()
-            # message.append("Internship Updated Successfully")
-            return JsonResponse({'succeess': True})
-        except:
+            return JsonResponse({'success': True})
+        except Exception as e:
+            print(f"Error saving internship: {e}")
             return JsonResponse({'success': False})
     else:
         form = AddInternshipForm(instance=internship)
