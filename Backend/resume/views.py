@@ -12,6 +12,7 @@ import docx
 import json
 import os
 from django.conf import settings
+from django.contrib.auth import get_user_model
 
 # @csrf_exempt
 # def extract_text_from_pdf(request):
@@ -207,8 +208,10 @@ def analyze_resume(request):
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 @csrf_exempt
 def save_resume(request):
-    student_id = 58
-    student = Student.objects.get
+    student_id = 44
+    user_id = 58
+    User = get_user_model()
+    user = User.objects.get(pk=user_id)
     if request.method == 'POST':
         try:
             user = request.user  # Assuming user is authenticated
