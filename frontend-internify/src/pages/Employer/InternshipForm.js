@@ -66,7 +66,7 @@ const InternshipForm = () => {
         const url = id 
           ? `http://127.0.0.1:8000/update_internship/${id}/` 
           : 'http://127.0.0.1:8000/create_internship/';
-        const method = id ? 'put' : 'post';
+        const method = id ? 'post' : 'post';
         const response = await axios[method](url, formattedValues, {
           headers: {
             'X-CSRFToken': user.token,
