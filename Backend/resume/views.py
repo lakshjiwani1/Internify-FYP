@@ -13,6 +13,14 @@ import json
 import os
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from langchain_google_genai import ChatGoogleGenerativeAI
+import google.generativeai as genai
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import Paragraph
+from reportlab.lib.enums import TA_CENTER
+
 
 # @csrf_exempt
 # def extract_text_from_pdf(request):
@@ -152,10 +160,14 @@ def extract_text_from_docx(request):
 
 @csrf_exempt
 def analyze_resume(request):
+    user_id = 48
+    User = get_user_model()
+    user = User.objects.get(pk=user_id)
+    print(user)
     if request.method == 'POST':
         print(request.FILES)
         try:
-            user = request.user  # Assuming user is authenticated
+            # user = request.user  # Assuming user is authenticated
             print(f"User ID: {user.id}")
             print(f"User Information: {user}")
             student = Student.objects.get(user=user)
@@ -242,4 +254,139 @@ def save_resume(request):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
+def initialize_gemini_api(api_key):
 
+    os.environ['GOOGLE_API_KEY'] = api_key
+
+    # GOOGLE_API_KEY=api_key
+
+    # Get the API key from the environment variables
+    GOOGLE_API_KEY = os.getenv('GOOGLE_API_KEY')
+
+    # Verify the API key is loaded
+    print(f"GOOGLE_API_KEY: {GOOGLE_API_KEY}")
+
+    # Assuming `genai` is a module or library you are using
+    # Replace `genai.configure` with the appropriate configuration function
+    # genai.configure(api_key=GOOGLE_API_KEY)
+    genai.configure(api_key=GOOGLE_API_KEY)
+
+def remove_asterisks(content):
+    # Replace all asterisks with an empty string
+    return content.replace('*', '')
+
+
+
+def save_resume_as_pdf(content, filename="resume.pdf", user_info=None):
+    if user_info is None:
+        user_info = {'name': 'John Doe', 'phone': '123-456-7890'}  # Default user info
+    content = remove_asterisks(content)
+    c = canvas.Canvas(filename)
+    width, height = letter
+
+    # Set initial y position
+    y_position = height - 72
+
+    # Function to draw text with automatic wrapping
+    def draw_text(text, y_pos, max_width, font_size=12, font="Times-Roman", left_margin=56.7, right_margin=56.7, top_margin=56.7, bottom_margin=56.7, bold=False, align=None):
+        style = getSampleStyleSheet()['Normal']
+        style.fontName = font
+        style.fontSize = font_size
+        if bold:
+            style.fontName = 'Times-Bold'
+        if align == 'center':
+            style.alignment = TA_CENTER
+        p = Paragraph(text, style)
+        p.wrapOn(c, max_width - (left_margin + right_margin), 0)
+        p.drawOn(c, left_margin, y_pos - p.height)
+        return y_pos - p.height - 4
+
+    # Split the content into lines
+    lines = content.split('\n')
+
+    # Draw the name at the top in bold and centered
+    c.setFont("Times-Bold", 16)
+    c.drawCentredString(width / 2, y_position, user_info['name'])
+    y_position -= 20  # Adjust for larger font size
+
+    # Draw the phone number below the name in normal text
+    c.setFont("Times-Roman", 12)
+    c.drawString(72, y_position, f"Phone: {user_info['email']}")
+    y_position -= 18  # Adjust for normal font size
+
+    # # Draw the phone number below the name in normal text
+    # c.setFont("Times-Roman", 12)
+    # c.drawString(72, y_position, f"Email: {user_info['email']}")
+    # y_position -= 16
+
+    # Draw each line with formatting
+    for line in lines:
+        if line.strip() in ["Professional Summary", "Education", "Skills", "Certifications and Awards"]:
+            y_position = draw_text(line.strip(), y_position, width - 72, font_size=14, bold=True)
+        else:
+            y_position = draw_text(line.strip(), y_position, width - 72)
+
+    c.showPage()
+    c.save()
+    print(f"Resume saved to {filename}")
+
+
+def generate_resume(request):
+    api_key = 'AIzaSyAl5qBDoGd_M1k09zRfbAHmK3soGfnacVw'
+    initialize_gemini_api(api_key)
+    llm = ChatGoogleGenerativeAI(model="gemini-pro")
+
+    headings = {
+    "Professional Summary": "Professional Summary",
+    "Education": "Education",
+    "Skills": "Skills",
+    "Certifications & Awards": "Certifications & Awards",
+    "Additional Experience": "Additional Information"
+    }
+    
+    user_id = 58
+    User = get_user_model()
+    user = User.objects.get(pk=user_id)
+    print(f"User ID: {user.id}")
+    print(f"User Information: {user}")
+    student = Student.objects.get(user=user)
+    print(f"Student ID: {student.id}")
+    print(f"Student Information: {student}")
+    print(f"Student First Name: {student.first_name}")
+    print(f"Student Last Name: {student.last_name}")
+    print(f"Student Email: {student.email}")
+    resume, created = ResumeInfo.objects.get_or_create(student=user)
+    print(f"Resume: {resume}")
+    print(f"Education from Resume: {resume.education}")
+    print(f"Resume Skills: {resume.skills}")
+
+    user_info = {
+        "name": student.first_name + student.last_name,
+        "last_name": student.last_name,
+        "email": student.email,
+        "skills": resume.skills,
+        "education": resume.education
+    }
+
+    prompt = f"""
+    You are a professional resume writer. Your task is to create an ATS-friendly resume based on the following user details:
+
+    Name: {user_info['name']}
+    Email: {user_info['email']}
+    Education: {user_info['education']}
+    Skills: {', '.join(user_info['skills'])}
+
+    Please ensure the resume is formatted in a clean and professional manner, suitable for Applicant Tracking Systems (ATS). The resume should include the following sections:
+
+    1. Contact Information
+    2. Professional Summary
+    3. Education
+    4. Skills
+    6. Certifications and Awards (if available)
+
+    Use the details provided to craft a compelling and concise resume. Make sure to use bullet points for easy readability in the skills and work experience sections. Highlight the most relevant skills and education qualifications that match typical job descriptions in the user's field. Ensure the formatting is simple and avoids graphics or complex layouts that might not be parsed correctly by ATS software.
+    """
+    result = llm.invoke(prompt)
+    print(result)
+    save_resume_as_pdf(result.content, user_info=user_info)
+    return JsonResponse({'success': True, 'user_info': user_info})
