@@ -18,6 +18,7 @@ import Companies from "./pages/User/Companies";
 import ProtectedRoute from "./components/ProtectedRoute"; 
 import Resume from "./pages/User/ResumePage";
 import SubmitResume from "./pages/User/SubmitResume";
+import MyApplications from "./pages/User/Applications";
 
 const userRoutes = [
   {
@@ -53,6 +54,7 @@ const userRoutes = [
   { path: '/companies', element: <Companies /> },
   { path: "/resume", element: <Resume/>},
   { path: "/submittedresume", element: <SubmitResume/>},
+  { path: '/myapplications', element: <MyApplications /> },
 ];
 
 const employerRoutes = [

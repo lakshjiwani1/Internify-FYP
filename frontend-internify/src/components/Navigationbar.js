@@ -47,6 +47,7 @@ function Navigationbar() {
     { text: "Resume Builder", to: "/resume" },
     { text: "Articles", to: "/articles" },
     { text: "Companies", to: "/companies" },
+    { text: "My Applications", to: "/myapplications" },
   ];
 
   if (!userId) {

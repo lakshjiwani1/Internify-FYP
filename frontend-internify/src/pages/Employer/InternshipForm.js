@@ -22,9 +22,9 @@ const InternshipForm = () => {
     if (id) {
       const fetchInternship = async () => {
         try {
-          const response = await axios.post(`http://127.0.0.1:8000/update_internship/${id}/`);
+          const response = await axios.get(`http://127.0.0.1:8000/internship_detail/${id}/`);
           setInternship(response.data);
-          console.log(response.data);
+          console.log('Fetched Internship Data:', response.data);
         } catch (error) {
           console.error('Error fetching internship:', error);
         }
@@ -77,7 +77,7 @@ const InternshipForm = () => {
         if (response.status === 200) {
           setSuccessAlert(true); 
           setTimeout(() => setSuccessAlert(false), 10000); 
-          // navigate('/employer');
+          navigate('/employer');
         } else {
           console.error('Internship submission failed:', response.data.error);
         }
@@ -88,6 +88,7 @@ const InternshipForm = () => {
   });
 
   useEffect(() => {
+    console.log("internship", internship)
     if (internship) {
       formik.setValues({
         title: internship.title,
@@ -199,7 +200,6 @@ const InternshipForm = () => {
             </Typography>
             <EStyledField
               minRows={8}
-              placeholder="Enter qualifications"
               variant="outlined"
               id="qualifications"
               name="qualifications"
