@@ -128,10 +128,10 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'internify',
         'USER': 'root',
-        'PASSWORD': 'root',
-        # 'PASSWORD': 'rootpassword',
-        'HOST':'localhost',
-        # 'HOST': 'internify-1.c924mayq6nod.eu-north-1.rds.amazonaws.com',
+        # 'PASSWORD': 'root',
+        'PASSWORD': 'rootpassword',
+        # 'HOST':'localhost',
+        'HOST': 'internify-1.c924mayq6nod.eu-north-1.rds.amazonaws.com',
         'PORT': '3306'
     }
 }

@@ -91,11 +91,27 @@ def internship_list(request):
     # return render(request, 'students/internship_list.html', context)
     return JsonResponse(context)
   
-
+@csrf_exempt
 def internship_detail(request, pk):
     internship = get_object_or_404(Internships, pk=pk)
-    return render(request, 'internships/internship_detail.html', {'internship': internship})
-
+    internship_data = {
+        'title': internship.title,
+        'start_date': internship.start_date,
+        'end_date': internship.end_date,
+        'location': internship.location,
+        'required_skills':internship.required_skills,
+        'qualification': internship.qualifications,
+        'application_deadline':internship.application_deadline,
+        'is_published': internship.is_published,
+        'accept_application': internship.accept_applications
+    }
+    print(internship_data)
+    # internships_json = serialize('json', internship)
+    # internships_data = json.loads(internships_json)
+    # context = {'internships': internships_data}
+    # return JsonResponse(context)
+    return JsonResponse(internship_data)
+    # return JsonResponse(internship_data)
 
 @csrf_exempt
 # @user_passes_test(is_company)
