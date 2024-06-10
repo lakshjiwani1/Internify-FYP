@@ -73,7 +73,8 @@ const employerRoutes = [
     )
   },
   { path: '/employer', element: <EmployerDashboard /> },
-  { path: '/internshipform', element: <InternshipForm /> }
+  { path: '/internshipform', element: <InternshipForm /> },
+  { path: "/internshipform/:id", element: <InternshipForm/>}
 ];
 
 const router = createBrowserRouter([

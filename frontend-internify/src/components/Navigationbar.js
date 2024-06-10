@@ -27,7 +27,7 @@ function Navigationbar() {
   const dispatch = useDispatch();
 
   const userState = useSelector(selectUserState);
-  const userId = userState.details.user_id;
+  const userId = userState?.details?.user_id;
 
   const [mobileOpen, setMobileOpen] = useState(false);
 

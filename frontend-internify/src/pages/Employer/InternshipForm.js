@@ -1,71 +1,107 @@
-import React from 'react';
-import { Container, Grid, Typography, FormControlLabel, Radio, RadioGroup, FormControl, FormLabel, Button, TextField } from '@mui/material';
-import { useFormik } from 'formik';
-import { EStyledField } from '../../misc/MUIComponent';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import * as Yup from 'yup';
 import { useSelector } from 'react-redux';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 import { selectUserState } from "../../store/user/user-slice";
 import { format } from 'date-fns';
+import {
+  Container, Grid, Typography, FormControlLabel, Radio, RadioGroup, FormControl, FormLabel, Button, TextField, Alert
+} from '@mui/material';
+import { EStyledField } from '../../misc/MUIComponent';
 
-const PostInternshipPage = () => {
+const InternshipForm = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
   const user = useSelector(selectUserState);
+  const [internship, setInternship] = useState(null);
+  const [successAlert, setSuccessAlert] = useState(false);
+
+  useEffect(() => {
+    if (id) {
+      const fetchInternship = async () => {
+        try {
+          const response = await axios.post(`http://127.0.0.1:8000/update_internship/${id}/`);
+          setInternship(response.data);
+          console.log(response.data);
+        } catch (error) {
+          console.error('Error fetching internship:', error);
+        }
+      };
+      fetchInternship();
+    }
+  }, [id]);
 
   const formik = useFormik({
     initialValues: {
       title: '',
-      startDate: '',
-      endDate: '',
+      start_date: '',
+      end_date: '',
       location: '',
-      requiredSkills: '',
-      description: '',
-      applicationDeadline: '',
-      published: 'no',
-      acceptingApplication: 'no',
+      required_skills: '',
+      qualifications: '',
+      application_deadline: '',
+      is_published: 'no',
+      accept_applications: 'no',
     },
+    enableReinitialize: true,
     validationSchema: Yup.object().shape({
       title: Yup.string().required('Title is required'),
-      startDate: Yup.string().required('Start Date is required'),
-      endDate: Yup.string().required('End Date is required'),
+      start_date: Yup.string().required('Start Date is required'),
+      end_date: Yup.string().required('End Date is required'),
       location: Yup.string().required('Location is required'),
-      requiredSkills: Yup.string().required('Required Skills are required'),
-      description: Yup.string().required('Description is required'),
-      applicationDeadline: Yup.string().required('Application Deadline is required'),
+      required_skills: Yup.string().required('Required Skills are required'),
+      qualifications: Yup.string().required('Qualifications are required'),
+      application_deadline: Yup.string().required('Application Deadline is required'),
     }),
-    onSubmit: async values => {
-      console.log("token", user.token);
-      console.log("User ID", user.details.user_id);
-      console.log("User Type", user.details.user_type);
+    onSubmit: async (values) => {
       try {
-        // Format the dates to YYYY/MM/DD
         const formattedValues = {
           ...values,
-          startDate: format(new Date(values.startDate), 'yyyy/MM/dd'),
-          endDate: format(new Date(values.endDate), 'yyyy/MM/dd'),
-          applicationDeadline: format(new Date(values.applicationDeadline), 'yyyy/MM/dd')
+          start_date: format(new Date(values.start_date), 'yyyy-MM-dd'),
+          end_date: format(new Date(values.end_date), 'yyyy-MM-dd'),
+          application_deadline: format(new Date(values.application_deadline), 'yyyy-MM-dd'),
         };
-        console.log("Formatted Start Date:", formattedValues.startDate);
-
-        const response = await axios.post('http://127.0.0.1:8000/create_internship/', formattedValues, {
+        const url = id 
+          ? `http://127.0.0.1:8000/update_internship/${id}/` 
+          : 'http://127.0.0.1:8000/create_internship/';
+        const method = id ? 'put' : 'post';
+        const response = await axios[method](url, formattedValues, {
           headers: {
-            'X-CSRFToken': user.token, 
-            'X-User-ID': user.details.user_id, 
+            'X-CSRFToken': user.token,
+            'X-User-ID': user.details.user_id,
           },
         });
-        console.log('Internship Response:', response.data);
-
+        
         if (response.status === 200) {
-          console.log('Internship Posted Successfully');
+          setSuccessAlert(true); 
+          setTimeout(() => setSuccessAlert(false), 10000); 
+          // navigate('/employer');
         } else {
-          console.error('Internship Posting failed:', response.data.error);
+          console.error('Internship submission failed:', response.data.error);
         }
       } catch (error) {
         console.error('API Error:', error);
       }
     },
   });
+
+  useEffect(() => {
+    if (internship) {
+      formik.setValues({
+        title: internship.title,
+        start_date: internship.start_date,
+        end_date: internship.end_date,
+        location: internship.location,
+        required_skills: internship.required_skills,
+        qualifications: internship.qualifications,
+        application_deadline: internship.application_deadline,
+        is_published: internship.is_published ? 'yes' : 'no',
+        accept_applications: internship.accept_applications ? 'yes' : 'no',
+      });
+    }
+  }, [internship]);
 
   return (
     <Container
@@ -79,7 +115,7 @@ const PostInternshipPage = () => {
       }}
     >
       <Typography variant="h4" align="center" sx={{ marginBottom: '2rem' }}>
-        Post Internship
+        {id ? 'Edit Internship' : 'Post Internship'}
       </Typography>
       <form onSubmit={formik.handleSubmit}>
         <Grid container spacing={2}>
@@ -95,7 +131,6 @@ const PostInternshipPage = () => {
               onChange={formik.handleChange}
               error={formik.touched.title && Boolean(formik.errors.title)}
               helperText={formik.touched.title && formik.errors.title}
-              
             />
           </Grid>
           <Grid item xs={12} md={6}>
@@ -105,12 +140,12 @@ const PostInternshipPage = () => {
             <TextField
               type="date"
               variant="outlined"
-              id="startDate"
-              name="startDate"
-              value={formik.values.startDate}
+              id="start_date"
+              name="start_date"
+              value={formik.values.start_date}
               onChange={formik.handleChange}
-              error={formik.touched.startDate && Boolean(formik.errors.startDate)}
-              helperText={formik.touched.startDate && formik.errors.startDate}
+              error={formik.touched.start_date && Boolean(formik.errors.start_date)}
+              helperText={formik.touched.start_date && formik.errors.start_date}
               sx={{ width: '100%' }}
             />
           </Grid>
@@ -121,12 +156,12 @@ const PostInternshipPage = () => {
             <TextField
               type="date"
               variant="outlined"
-              id="endDate"
-              name="endDate"
-              value={formik.values.endDate}
+              id="end_date"
+              name="end_date"
+              value={formik.values.end_date}
               onChange={formik.handleChange}
-              error={formik.touched.endDate && Boolean(formik.errors.endDate)}
-              helperText={formik.touched.endDate && formik.errors.endDate}
+              error={formik.touched.end_date && Boolean(formik.errors.end_date)}
+              helperText={formik.touched.end_date && formik.errors.end_date}
               sx={{ width: '100%' }}
             />
           </Grid>
@@ -150,28 +185,28 @@ const PostInternshipPage = () => {
             </Typography>
             <EStyledField
               variant="outlined"
-              id="requiredSkills"
-              name="requiredSkills"
-              value={formik.values.requiredSkills}
+              id="required_skills"
+              name="required_skills"
+              value={formik.values.required_skills}
               onChange={formik.handleChange}
-              error={formik.touched.requiredSkills && Boolean(formik.errors.requiredSkills)}
-              helperText={formik.touched.requiredSkills && formik.errors.requiredSkills}
+              error={formik.touched.required_skills && Boolean(formik.errors.required_skills)}
+              helperText={formik.touched.required_skills && formik.errors.required_skills}
             />
           </Grid>
           <Grid item xs={12}>
             <Typography variant="subtitle1" sx={{ marginBottom: '0.5rem' }}>
-              Description
+              Qualifications
             </Typography>
             <EStyledField
-              minRows={8} // Increased height
-              placeholder="Enter description"
+              minRows={8}
+              placeholder="Enter qualifications"
               variant="outlined"
-              id="description"
-              name="description"
-              value={formik.values.description}
+              id="qualifications"
+              name="qualifications"
+              value={formik.values.qualifications}
               onChange={formik.handleChange}
-              error={formik.touched.description && Boolean(formik.errors.description)}
-              helperText={formik.touched.description && formik.errors.description}
+              error={formik.touched.qualifications && Boolean(formik.errors.qualifications)}
+              helperText={formik.touched.qualifications && formik.errors.qualifications}
             />
           </Grid>
           <Grid item xs={12}>
@@ -181,12 +216,12 @@ const PostInternshipPage = () => {
             <EStyledField
               type="date"
               variant="outlined"
-              id="applicationDeadline"
-              name="applicationDeadline"
-              value={formik.values.applicationDeadline}
+              id="application_deadline"
+              name="application_deadline"
+              value={formik.values.application_deadline}
               onChange={formik.handleChange}
-              error={formik.touched.applicationDeadline && Boolean(formik.errors.applicationDeadline)}
-              helperText={formik.touched.applicationDeadline && formik.errors.applicationDeadline}
+              error={formik.touched.application_deadline && Boolean(formik.errors.application_deadline)}
+              helperText={formik.touched.application_deadline && formik.errors.application_deadline}
             />
           </Grid>
           <Grid item xs={12} md={6}>
@@ -194,9 +229,9 @@ const PostInternshipPage = () => {
               <FormLabel component="legend">Published</FormLabel>
               <RadioGroup
                 row
-                aria-label="published"
-                name="published"
-                value={formik.values.published}
+                aria-label="is_published"
+                name="is_published"
+                value={formik.values.is_published}
                 onChange={formik.handleChange}
               >
                 <FormControlLabel value="yes" control={<Radio />} label="Yes" />
@@ -209,9 +244,9 @@ const PostInternshipPage = () => {
               <FormLabel component="legend">Accepting Application</FormLabel>
               <RadioGroup
                 row
-                aria-label="acceptingApplication"
-                name="acceptingApplication"
-                value={formik.values.acceptingApplication}
+                aria-label="accept_applications"
+                name="accept_applications"
+                value={formik.values.accept_applications}
                 onChange={formik.handleChange}
               >
                 <FormControlLabel value="yes" control={<Radio />} label="Yes" />
@@ -226,8 +261,13 @@ const PostInternshipPage = () => {
           </Grid>
         </Grid>
       </form>
+      {successAlert && (
+        <Alert severity="success" sx={{ marginTop: '1rem' }}>
+          {id ? 'Internship Updated Successfully' : 'Internship Posted Successfully'}
+        </Alert>
+      )}
     </Container>
   );
 };
 
-export default PostInternshipPage;
+export default InternshipForm;

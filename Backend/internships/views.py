@@ -98,7 +98,7 @@ def internship_detail(request, pk):
 
 
 @csrf_exempt
-@user_passes_test(is_company)
+# @user_passes_test(is_company)
 def update_internship(request, pk):
     message = []
     internship = get_object_or_404(Internships, pk=pk)
@@ -114,7 +114,7 @@ def update_internship(request, pk):
         
         try:
             updated_internship = form.save(commit=False)
-            updated_internship.company = request.user.companyauth
+            # updated_internship.company = request.user.companyauth
             updated_internship.save()
             # message.append("Internship Updated Successfully")
             return JsonResponse({'succeess': True})
@@ -127,19 +127,20 @@ def update_internship(request, pk):
 
 
 
-@user_passes_test(is_company)
+# @user_passes_test(is_company)
+@csrf_exempt
 def delete_internship(request, pk):
     internship = get_object_or_404(Internships, pk=pk)
 
     # Check if the logged-in company owns the internship
-    if internship.company == request.user.companyauth:
-        internship_title = internship.title  # Save the title before deletion
-        internship.delete()
-        return JsonResponse({'success':True})
-    else:
+    # if internship.company == request.user.companyauth:
+    internship_title = internship.title  # Save the title before deletion
+    internship.delete()
+    return JsonResponse({'success':True})
+    # else:
         # Handle the case where the company doesn't own the internship
         # messages.error(request, "You don't have permission to delete this internship.")
-        return JsonResponse({'success':False})
+        # return JsonResponse({'success':False})
     # return redirect('internship_list')
 
 def view_applications(request, internship_id):
