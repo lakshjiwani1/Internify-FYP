@@ -192,7 +192,7 @@ def analyze_resume(request):
                 return JsonResponse({'error': 'Failed to extract text from file'}, status=400)
 
             # Load the trained spaCy model
-            model_path = os.path.join(settings.BASE_DIR, 'F:\\FYP\\Git\\Internify-FYP\\Internify\\Backend\\', 'spacy_model')  # Update this path
+            model_path = os.path.join(settings.BASE_DIR, 'D:\\laksh\\Semesters\\FYP\\FYP-2\\Internify\\Backend\\spacy_model\\', 'spacy_model')  # Update this path
             print(f"Model Path: {model_path}")
             nlp = spacy.load(model_path)
             print(f"Model Loaded Successfully {nlp}")
