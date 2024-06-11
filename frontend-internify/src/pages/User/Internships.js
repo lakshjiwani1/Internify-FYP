@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Card, CardContent, Box, TextField, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Container, Typography, Card, CardContent, Box, TextField, Button, Dialog, DialogActions, DialogContent, DialogTitle, Snackbar, Alert } from '@mui/material';
 import WorkIcon from '@mui/icons-material/Work';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { selectUserState } from '../../store/user/user-slice';
 
 const Internship = () => {
   const [internships, setInternships] = useState([]);
@@ -8,6 +11,10 @@ const Internship = () => {
   const [filteredInternships, setFilteredInternships] = useState([]);
   const [selectedInternship, setSelectedInternship] = useState(null);
   const [open, setOpen] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertSeverity, setAlertSeverity] = useState('success');
+  const user = useSelector(selectUserState);
 
   const handleSearch = () => {
     const filtered = internships.filter((internship) =>
@@ -24,6 +31,55 @@ const Internship = () => {
   const handleClose = () => {
     setOpen(false);
     setSelectedInternship(null);
+  };
+
+  const handleApply = async () => {
+    if (!selectedInternship) return;
+
+    const csrfToken = user.token;
+    if (!csrfToken) {
+      setAlertMessage('CSRF token not found');
+      setAlertSeverity('error');
+      setAlertOpen(true);
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `http://127.0.0.1:8000/apply_to_internship/${selectedInternship.pk}/`,
+        {},
+        {
+          headers: {
+            'Authorization': `Bearer ${user.token}`,
+            'X-CSRFToken': csrfToken,
+          },
+          withCredentials: true,
+        }
+      );
+      console.log('Response', response.data);
+      console.log('Selected internship', selectedInternship.pk);
+      if (response.status === 200 && response.data.success) {
+        setAlertMessage('Applied to Internship Successfully');
+        setAlertSeverity('success');
+      } else {
+        setAlertMessage(response.data.message || 'Failed to apply to internship');
+        setAlertSeverity('error');
+      }
+    } catch (error) {
+      console.error('Error applying for internship:', error.response ? error.response.data : error.message);
+      setAlertMessage(error.response ? error.response.data.message : error.message);
+      setAlertSeverity('error');
+    } finally {
+      setAlertOpen(true);
+      handleClose();
+    }
+  };
+
+  const handleAlertClose = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setAlertOpen(false);
   };
 
   useEffect(() => {
@@ -127,11 +183,22 @@ const Internship = () => {
           <Button onClick={handleClose} color="primary" sx={{ marginRight: 1, marginBottom: 3 }}>
             Cancel
           </Button>
-          <Button onClick={() => console.log('Applying for internship')} color="primary" variant="contained" startIcon={<WorkIcon />} sx={{ marginBottom: 3, marginRight: 3 }}>
+          <Button onClick={handleApply} color="primary" variant="contained" startIcon={<WorkIcon />} sx={{ marginBottom: 3, marginRight: 3 }}>
             Apply
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={alertOpen}
+        autoHideDuration={6000}
+        onClose={handleAlertClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleAlertClose} severity={alertSeverity} sx={{ width: '100%' }}>
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Grid, Paper, Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Snackbar, Alert } from '@mui/material';
+import { Button, Grid, Paper, Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogTitle, Box } from '@mui/material';
 import { AddCircleOutline, MoreVert, Edit, Delete } from '@mui/icons-material';
 import { useTheme } from '@mui/system';
 import { Link, useNavigate } from 'react-router-dom';
@@ -14,6 +14,8 @@ const EmployerDashboard = () => {
   const [selectedInternship, setSelectedInternship] = useState(null);
   const [internships, setInternships] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [applicantsDialogOpen, setApplicantsDialogOpen] = useState(false);
+  const [applicants, setApplicants] = useState([]);
   const open = Boolean(anchorEl);
   const user = useSelector(selectUserState);
 
@@ -47,6 +49,27 @@ const EmployerDashboard = () => {
     } finally {
       handleClose();
     }
+  };
+
+  const handleViewApplicants = async (internshipId) => {
+    const url = `http://127.0.0.1:8000/view_applicants/${internshipId}/`;
+    console.log(`Fetching applicants from URL: ${url}`); // Log the URL for debugging
+    try {
+      const response = await axios.get(url, {
+        headers: {
+          'X-CSRFToken': user.token,
+          'Authorization': `Bearer ${user.token}`,
+        },
+      });
+      setApplicants(response.data.applicants);
+      setApplicantsDialogOpen(true);
+    } catch (error) {
+      console.error('Error fetching applicants:', error);
+    }
+  };
+
+  const closeApplicantsDialog = () => {
+    setApplicantsDialogOpen(false);
   };
 
   useEffect(() => {
@@ -111,7 +134,7 @@ const EmployerDashboard = () => {
                 <TableRow>
                   <TableCell>Internship</TableCell>
                   <TableCell>Start Date</TableCell>
-                  <TableCell>End Date</TableCell>
+                  <TableCell>Applicants</TableCell>
                   <TableCell>Location</TableCell>
                   <TableCell>Application Deadline</TableCell>
                   <TableCell>Action</TableCell>
@@ -122,7 +145,11 @@ const EmployerDashboard = () => {
                   <TableRow key={internship.id}>
                     <TableCell>{internship.title}</TableCell>
                     <TableCell>{internship.start_date}</TableCell>
-                    <TableCell>{internship.end_date}</TableCell>
+                    <TableCell>
+                      <Button variant="text" onClick={() => handleViewApplicants(internship.id)}>
+                        {internship.number_of_applicants} Applicants
+                      </Button>
+                    </TableCell>
                     <TableCell>{internship.location}</TableCell>
                     <TableCell>{internship.application_deadline}</TableCell>
                     <TableCell>
@@ -159,13 +186,43 @@ const EmployerDashboard = () => {
           <Typography variant="body1" sx={{ textAlign: 'center', marginBottom: '1rem' }}>No internships posted.</Typography>
         )}
       </Grid>
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={() => setSnackbarOpen(false)}
-      >
+
+      <Dialog open={applicantsDialogOpen} onClose={closeApplicantsDialog} maxWidth="md" fullWidth>
+        <DialogTitle>Applicants</DialogTitle>
+        <DialogContent>
+          {applicants.length > 0 ? (
+            <Box>
+              {applicants.map((applicant) => (
+                <Box key={applicant.id} sx={{ marginBottom: 2 }}>
+                  <Typography variant="h6">{applicant.name}</Typography>
+                  <Typography variant="body2" color="textSecondary">{applicant.email}</Typography>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    href={applicant.cv_file}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{ marginTop: 1 }}
+                  >
+                    View CV
+                  </Button>
+                </Box>
+              ))}
+            </Box>
+          ) : (
+            <Typography variant="body1">No applicants yet.</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeApplicantsDialog} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
         <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
-          Internship deleted successfully
+          Internship deleted successfully!
         </Alert>
       </Snackbar>
     </Grid>
