@@ -29,7 +29,8 @@ def is_student(user):
 def view_all_internships(request):
     form = InternshipSearchForm()
     internships = Internships.objects.filter(is_published=True).order_by('-created_at')
-    number_of_applicants = count_applicants(internships)
+    # print(f"internship id: {internships.id}")
+    # number_of_applicants = count_applicants(internships.id)
     context = {'internships': internships}  # Initialize context with an empty list
     print(f"Request_Body: {request.body}")
     print(internships)
@@ -65,7 +66,7 @@ def view_all_internships(request):
     # return render(request, 'students/internship_list.html', context)
     return JsonResponse({
         'internships': internships_data,
-        'number_of_applicants':number_of_applicants
+        # 'number_of_applicants':number_of_applicants
     })
 
 
