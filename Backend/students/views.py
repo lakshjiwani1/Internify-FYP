@@ -27,6 +27,7 @@ def is_student(user):
 def view_all_internships(request):
     form = InternshipSearchForm()
     internships = Internships.objects.filter(is_published=True).order_by('-created_at')
+    number_of_applicants = count_applicants(internships)
     context = {'internships': internships}  # Initialize context with an empty list
     print(f"Request_Body: {request.body}")
     print(internships)
@@ -60,7 +61,10 @@ def view_all_internships(request):
     #         context = {'query': query, 'internships': internships_data}
 
     # return render(request, 'students/internship_list.html', context)
-    return JsonResponse(context)
+    return JsonResponse({
+        'internships': internships_data,
+        'number_of_applicants':number_of_applicants
+    })
 
 
 # @user_passes_test(is_student)
@@ -127,4 +131,15 @@ def apply_to_internship(request, internship_id):
 
 #     context = {'query': query, 'internships': internships}
 #     return render(request, 'internships/internship_search_results.html', context)
-# def count_applicants(request):
+def count_applicants(internships):
+    internships_with_count = []
+    for internship in internships:
+        applicant_count = internship.application_set.count()  # Use related manager
+        internship_data = {
+            'id': internship.id,
+            'title': internship.title,
+            # ... other internship details
+            'applicant_count': applicant_count
+        }
+        internships_with_count.append(internship_data)
+    return internships_with_count
