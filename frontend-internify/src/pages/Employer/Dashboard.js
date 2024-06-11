@@ -14,8 +14,11 @@ const EmployerDashboard = () => {
   const [selectedInternship, setSelectedInternship] = useState(null);
   const [internships, setInternships] = useState([]);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
   const [applicantsDialogOpen, setApplicantsDialogOpen] = useState(false);
   const [applicants, setApplicants] = useState([]);
+  const [selectedApplicant, setSelectedApplicant] = useState(null);
+  const [viewApplicantDialogOpen, setViewApplicantDialogOpen] = useState(false);
   const open = Boolean(anchorEl);
   const user = useSelector(selectUserState);
   const [loading, setLoading] = useState(true); 
@@ -44,6 +47,7 @@ const EmployerDashboard = () => {
         },
       });
       setInternships(internships.filter(internship => internship.id !== selectedInternship.id));
+      setSnackbarMessage('Internship deleted successfully!');
       setSnackbarOpen(true);
     } catch (error) {
       console.error('Error deleting internship:', error);
@@ -71,8 +75,22 @@ const EmployerDashboard = () => {
     }
   };
 
+  const handleAcceptApplication = (applicantId) => {
+    setSnackbarMessage('Applicant Accepted Successfully');
+    setSnackbarOpen(true);
+  };
+
+  const handleViewApplicant = (applicant) => {
+    setSelectedApplicant(applicant);
+    setViewApplicantDialogOpen(true);
+  };
+
   const closeApplicantsDialog = () => {
     setApplicantsDialogOpen(false);
+  };
+
+  const closeViewApplicantDialog = () => {
+    setViewApplicantDialogOpen(false);
   };
 
   useEffect(() => {
@@ -101,7 +119,7 @@ const EmployerDashboard = () => {
     fetchData();
   }, [user.token]);
 
-if (loading) {
+  if (loading) {
     return (
       <Container maxWidth="md" sx={{ marginTop: '2rem', marginBottom: '2rem', width: '70%', textAlign: 'center' }}>
         <CircularProgress />
@@ -207,9 +225,14 @@ if (loading) {
             <Box>
               {applicants.map((applicant) => (
                 <Box key={applicant.id} sx={{ marginBottom: 2 }}>
-                  <Typography variant="h6">{applicants.applicant_count}</Typography>
-                  <Typography variant="h6">{applicant.student__first_name}</Typography>
+                  <Typography variant="h6">{applicant.student__first_name} {applicant.student__last_name}</Typography>
                   <Typography variant="body2" color="textSecondary">{applicant.student__email}</Typography>
+                  <Button variant="contained" color="primary" onClick={() => handleAcceptApplication(applicant.id)} sx={{marginTop: 3}}>
+                    Accept Application
+                  </Button>
+                  <Button variant="outlined" color="primary" onClick={() => handleViewApplicant(applicant)} sx={{ marginLeft: 1, marginTop: 3 }}>
+                    View Applicant
+                  </Button>
                 </Box>
               ))}
             </Box>
@@ -224,9 +247,33 @@ if (loading) {
         </DialogActions>
       </Dialog>
 
+      <Dialog open={viewApplicantDialogOpen} onClose={closeViewApplicantDialog} maxWidth="md" fullWidth>
+        <DialogTitle>Applicant Details</DialogTitle>
+        <DialogContent>
+          {selectedApplicant ? (
+            <Box>
+              <Typography variant="h6">Name: {selectedApplicant.student__first_name} {selectedApplicant.student__last_name}</Typography>
+              <Typography variant="body2" color="textSecondary">Email: {selectedApplicant.student__email}</Typography>
+              <Typography variant="body2" color="textSecondary">Phone: {selectedApplicant.student__phone}</Typography>
+              <Typography variant="body2" color="textSecondary">Address: {selectedApplicant.student__address}</Typography>
+              <Typography variant="body2" color="textSecondary">Qualification: {selectedApplicant.student__qualification}</Typography>
+              <Typography variant="body2" color="textSecondary">Experience: {selectedApplicant.student__experience}</Typography>
+              <Typography variant="body2" color="textSecondary">Skills: {selectedApplicant.student__skills}</Typography>
+            </Box>
+          ) : (
+            <Typography variant="body1">No applicant details available.</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeViewApplicantDialog} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={() => setSnackbarOpen(false)}>
         <Alert onClose={() => setSnackbarOpen(false)} severity="success" sx={{ width: '100%' }}>
-          Internship deleted successfully!
+          {snackbarMessage}
         </Alert>
       </Snackbar>
     </Grid>

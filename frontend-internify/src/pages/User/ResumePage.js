@@ -61,10 +61,13 @@ const Resume = () => {
         withCredentials: true,
       });
       console.log('Response data: ', response.data)
-      if (response.data.success) {
+      if (response.data && response.data.success) {
         navigate('/submittedresume');
+      } else if (response.data && response.data.message) {
+        console.error('Error analyzing resume:', response.data.message);
       } else {
-        console.error('Error submitting resume:', response.data.message);
+        console.log(response.data.success);
+        console.error('Unexpected response from backend:', response.data);
       }
     } catch (error) {
       console.error('Error submitting resume:', error.response ? error.response.data : error.message);
