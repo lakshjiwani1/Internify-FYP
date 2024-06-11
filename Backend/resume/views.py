@@ -226,7 +226,7 @@ def save_resume(request):
     user = User.objects.get(pk=user_id)
     if request.method == 'POST':
         try:
-            user = request.user  # Assuming user is authenticated
+            # user = request.user  # Assuming user is authenticated
             print(f"User ID: {user.id}")
             print(f"User Information: {user}")
             student = Student.objects.get(user=user)

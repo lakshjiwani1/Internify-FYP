@@ -8,6 +8,8 @@ from django.http import JsonResponse
 from django.forms.models import model_to_dict
 from django.core.serializers import serialize
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.contrib.auth import get_user_model
+from authentication.models import Student
 
 # Create your views here.
 
@@ -61,16 +63,23 @@ def view_all_internships(request):
     return JsonResponse(context)
 
 
-@user_passes_test(is_student)
+# @user_passes_test(is_student)
 @csrf_exempt
 def apply_to_internship(request, internship_id):
     messages = []
     internship = get_object_or_404(Internships, pk=internship_id)
-    student = request.user.student
+    user_id = 48
+    User = get_user_model()
+    print("getting user")
+    user = User.objects.get(pk=user_id)
+    print(f"User: {user}")
+    # student = request.user.student
+    student = Student.objects.get(user=user)
+    print(f"Student: {student}")
     if internship.accept_applications and internship.is_application_period_active():
         if request.method == 'POST':
             # Check if the student has already applied
-            if Application.objects.filter(internship=internship, student=request.user.student).exists():
+            if Application.objects.filter(internship=internship, student=student).exists():
                 messages.append('You have already applied to this internship.')
                 # return render(request, 'student/apply_error.html')
                 return render(request, 'students/apply_to_internship.html', {'internship': internship, 'messages': messages})
@@ -118,3 +127,4 @@ def apply_to_internship(request, internship_id):
 
 #     context = {'query': query, 'internships': internships}
 #     return render(request, 'internships/internship_search_results.html', context)
+# def count_applicants(request):

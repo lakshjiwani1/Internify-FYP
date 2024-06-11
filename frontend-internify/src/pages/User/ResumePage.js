@@ -60,7 +60,7 @@ const Resume = () => {
         },
         withCredentials: true,
       });
-
+      console.log('Response data: ', response.data)
       if (response.data.success) {
         navigate('/submittedresume');
       } else {
