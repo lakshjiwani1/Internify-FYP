@@ -1,36 +1,54 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-
-const internships = [
-  {
-    id: 1,
-    title: 'Software Engineer Intern',
-    company: 'Softech',
-    city: 'Karachi',
-  },
-  {
-    id: 2,
-    title: 'Data Analyst Intern',
-    company: 'DataSolutions',
-    city: 'Karachi',
-  },
-  {
-    id: 3,
-    title: 'Web Developer Intern',
-    company: 'Qordata',
-    city: 'Karachi',
-  },
-];
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { selectUserState } from '../../store/user/user-slice';
 
 const MyApplications = () => {
   const [open, setOpen] = useState(false);
+  const [internships, setInternships] = useState([]);
+  const [status, setStatus] = useState('');
+  const [selectedInternshipId, setSelectedInternshipId] = useState(null);
+  const user = useSelector(selectUserState);
 
-  const handleClickOpen = () => {
+  useEffect(() => {
+    const fetchInternships = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/track_application/', {
+          headers: {
+            'Authorization': `Bearer ${user.token}`,
+          },
+        });
+        setInternships(response.data);
+      } catch (error) {
+        console.error('Error fetching internships:', error);
+      }
+    };
+
+    fetchInternships();
+  }, [user.token]);
+
+  const handleClickOpen = async (internshipId) => {
+    setSelectedInternshipId(internshipId);
     setOpen(true);
+
+    try {
+      const response = await axios.get(`http://127.0.0.1:8000/track_application/${internshipId}/`, {
+        headers: {
+          'Authorization': `Bearer ${user.token}`,
+        },
+      });
+      setStatus(response.data.status);
+    } catch (error) {
+      console.error('Error fetching application status:', error);
+      setStatus('Error fetching application status');
+    }
   };
 
   const handleClose = () => {
     setOpen(false);
+    setStatus('');
+    setSelectedInternshipId(null);
   };
 
   return (
@@ -56,7 +74,7 @@ const MyApplications = () => {
             <Typography variant="body2" color="textSecondary">{internship.company}</Typography>
             <Typography variant="body2" color="textSecondary">{internship.city}</Typography>
           </Box>
-          <Button variant="contained" color="primary" onClick={handleClickOpen}>
+          <Button variant="contained" color="primary" onClick={() => handleClickOpen(internship.id)}>
             Track Application
           </Button>
         </Box>
@@ -65,7 +83,7 @@ const MyApplications = () => {
         <DialogTitle>Application Status</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Your application is under process.
+            {status || 'Your application is under process.'}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

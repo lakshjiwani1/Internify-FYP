@@ -52,7 +52,7 @@ const EmployerDashboard = () => {
   };
 
   const handleViewApplicants = async (internshipId) => {
-    const url = `http://127.0.0.1:8000/view_applicants/${internshipId}/`;
+    const url = `http://127.0.0.1:8000/count_applicants/${internshipId}/`;
     console.log(`Fetching applicants from URL: ${url}`); // Log the URL for debugging
     try {
       const response = await axios.get(url, {
@@ -63,6 +63,8 @@ const EmployerDashboard = () => {
       });
       setApplicants(response.data.applicants);
       setApplicantsDialogOpen(true);
+      console.log(response.data.applicants);
+      console.log("ID", internshipId);
     } catch (error) {
       console.error('Error fetching applicants:', error);
     }
@@ -194,18 +196,9 @@ const EmployerDashboard = () => {
             <Box>
               {applicants.map((applicant) => (
                 <Box key={applicant.id} sx={{ marginBottom: 2 }}>
-                  <Typography variant="h6">{applicant.name}</Typography>
-                  <Typography variant="body2" color="textSecondary">{applicant.email}</Typography>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    href={applicant.cv_file}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{ marginTop: 1 }}
-                  >
-                    View CV
-                  </Button>
+                  <Typography variant="h6">{applicants.applicant_count}</Typography>
+                  <Typography variant="h6">{applicant.student__first_name}</Typography>
+                  <Typography variant="body2" color="textSecondary">{applicant.student__email}</Typography>
                 </Box>
               ))}
             </Box>

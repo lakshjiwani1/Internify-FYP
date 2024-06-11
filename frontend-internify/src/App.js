@@ -20,6 +20,7 @@ import Resume from "./pages/User/ResumePage";
 import SubmitResume from "./pages/User/SubmitResume";
 import MyApplications from "./pages/User/Applications";
 import MyArticles from "./pages/User/MyArticles";
+import AdminPanel from "./pages/AdminPanel";
 
 const userRoutes = [
   {
@@ -57,7 +58,8 @@ const userRoutes = [
   { path: "/resume", element: <Resume/>},
   { path: "/submittedresume", element: <SubmitResume/>},
   { path: '/myapplications', element: <MyApplications /> },
-  { path: '/myarticles', element: <MyArticles/>}
+  { path: '/myarticles', element: <MyArticles/>},
+  { path: '/adminpanel', element: <AdminPanel/>}
 ];
 
 const employerRoutes = [

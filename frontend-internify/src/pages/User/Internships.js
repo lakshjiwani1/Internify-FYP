@@ -56,14 +56,24 @@ const Internship = () => {
           withCredentials: true,
         }
       );
-      console.log('Response', response.data);
-      console.log('Selected internship', selectedInternship.pk);
-      if (response.status === 200 && response.data.success) {
+
+      // Parse the HTML response to check for specific messages
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(response.data, 'text/html');
+      const messages = doc.querySelector('.messages');
+
+      if (messages) {
+        const messageText = messages.textContent.trim();
+        if (messageText.includes('already applied')) {
+          setAlertMessage('You have already applied to this internship.');
+          setAlertSeverity('warning');
+        } else {
+          setAlertMessage('Applied to Internship Successfully');
+          setAlertSeverity('success');
+        }
+      } else {
         setAlertMessage('Applied to Internship Successfully');
         setAlertSeverity('success');
-      } else {
-        setAlertMessage(response.data.message || 'Failed to apply to internship');
-        setAlertSeverity('error');
       }
     } catch (error) {
       console.error('Error applying for internship:', error.response ? error.response.data : error.message);
