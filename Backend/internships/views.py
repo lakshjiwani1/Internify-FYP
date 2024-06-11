@@ -12,6 +12,8 @@ from django.contrib import messages
 from django.core.serializers import serialize
 import json
 from .forms import InternshipSearchForm
+from authentication.models import CompanyAuth
+from django.contrib.auth import get_user_model
 
 
 def is_company(user):
@@ -23,7 +25,12 @@ def is_company(user):
 @csrf_exempt
 def create_internship(request):
     message = []                                
-
+    user_id = 2
+    User = get_user_model()
+    user = User.objects.get(pk=user_id)
+    print(f"User: {user}")
+    company = CompanyAuth.objects.get(user=user)
+    print(f"company: {company}")
     if request.method == 'POST':
         form = AddInternshipForm(request.POST)
         form.load_json_data(request.body)
@@ -37,7 +44,7 @@ def create_internship(request):
 
         try:
             internship = form.save(commit=False)
-            internship.company = request.user.companyauth
+            internship.company = company
             if internship.company:
                 internship.save()
                 return JsonResponse({'success': True, 'redirect': '/'})
