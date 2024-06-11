@@ -11,6 +11,8 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth import get_user_model
 from authentication.models import Student
 from internships.models import Internships
+from django.db.models import Count
+
 # Create your views here.
 
 def is_student(user):
@@ -133,13 +135,22 @@ def apply_to_internship(request, internship_id):
 #     return render(request, 'internships/internship_search_results.html', context)
 def count_applicants(internships):
     internships_with_count = []
+    
     for internship in internships:
         applicant_count = internship.application_set.count()  # Use related manager
+                # Get student information for each applicant
+        
+        applicants = internship.application_set.select_related('student').annotate(
+            student_name=Count('student__first_name'),  # Count for demonstration
+            student_email=Count('student__email'),  # Count for demonstration (replace with actual field)
+        ).values('student__first_name', 'student__email')  # Select specific student fields
+        # Combine internship details, applicant count, and student information
         internship_data = {
             'id': internship.id,
             'title': internship.title,
             # ... other internship details
-            'applicant_count': applicant_count
+            'applicant_count': applicant_count,
+            'applicants': list(applicants),  # Convert applicants queryset to a list
         }
         internships_with_count.append(internship_data)
     return internships_with_count
