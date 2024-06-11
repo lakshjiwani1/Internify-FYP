@@ -220,8 +220,8 @@ def analyze_resume(request):
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 @csrf_exempt
 def save_resume(request):
-    student_id = 44
-    user_id = 58
+    student_id = 35
+    user_id = 48
     User = get_user_model()
     user = User.objects.get(pk=user_id)
     if request.method == 'POST':
@@ -344,7 +344,7 @@ def generate_resume(request):
     "Additional Experience": "Additional Information"
     }
     
-    user_id = 58
+    user_id = 48
     User = get_user_model()
     user = User.objects.get(pk=user_id)
     print(f"User ID: {user.id}")
