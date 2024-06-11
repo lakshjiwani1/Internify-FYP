@@ -189,9 +189,10 @@ def view_applications(request, internship_id):
     context = {'internship': internship, 'applications': applications}
     return render(request, 'internships/view_applications.html', context)
 
-@csrf_exempt
+
 def get_company(request):
     if request.method == 'GET':
-        company_auth = CompanyAuth.objects.all()
-        company_auth_json = serialize('json', company_auth)
-        return JsonResponse(company_auth_json, safe=False)
+        companies = CompanyAuth.objects.all()
+        company_auth_json = serialize('json', companies)
+        company_data = json.loads(company_auth_json)
+        return JsonResponse({'companies': company_data})
