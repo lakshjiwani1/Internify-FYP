@@ -10,7 +10,7 @@ from django.core.serializers import serialize
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth import get_user_model
 from authentication.models import Student
-
+from internships.models import Internships
 # Create your views here.
 
 def is_student(user):
@@ -143,3 +143,32 @@ def count_applicants(internships):
         }
         internships_with_count.append(internship_data)
     return internships_with_count
+
+def track_application(request):
+    user_id = 48
+    User = get_user_model()
+    print("getting user")
+    user = User.objects.get(pk=user_id)
+    print(f"User: {user}")
+    print("Getting student")
+    student = Student.objects.get(user=user)
+    print(f"Student: {student}")
+
+    # Filter internships where student_id matches the logged-in user's student
+    internships = Internships.objects.filter(application__student=student).distinct()
+    # context = internships
+    internships_json = serialize('json', internships)
+    print(f"Internships Json: {internships_json}")
+    print(f"Internships: {internships}")
+    context = {'internships': internships}
+    internships_data = json.loads(internships_json)
+    print(f"Internships data: {internships_data}")
+
+    context = {'internships': internships_data}
+    print(f"Context: {context}")
+
+    return JsonResponse(context)
+    # return render(request, 'your_template.html', context)
+    # else:
+    #     # Redirect to login page if not authenticated
+    #     return redirect('login')
