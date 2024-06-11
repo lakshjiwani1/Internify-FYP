@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Grid, Paper, Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogTitle, Box } from '@mui/material';
+import { Button, Grid, Paper, Typography, IconButton, Menu, MenuItem, ListItemIcon, ListItemText, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogTitle, Box, CircularProgress, Container } from '@mui/material';
 import { AddCircleOutline, MoreVert, Edit, Delete } from '@mui/icons-material';
 import { useTheme } from '@mui/system';
 import { Link, useNavigate } from 'react-router-dom';
@@ -18,6 +18,7 @@ const EmployerDashboard = () => {
   const [applicants, setApplicants] = useState([]);
   const open = Boolean(anchorEl);
   const user = useSelector(selectUserState);
+  const [loading, setLoading] = useState(true); 
 
   const handleClick = (event, internship) => {
     setAnchorEl(event.currentTarget);
@@ -92,11 +93,21 @@ const EmployerDashboard = () => {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false); 
       }
     };
 
     fetchData();
   }, [user.token]);
+
+if (loading) {
+    return (
+      <Container maxWidth="md" sx={{ marginTop: '2rem', marginBottom: '2rem', width: '70%', textAlign: 'center' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
 
   return (
     <Grid container spacing={2} sx={{ width: '80%', margin: 'auto' }}>

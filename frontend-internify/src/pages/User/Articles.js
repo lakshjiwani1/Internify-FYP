@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Typography, TextField, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Container, Grid, Typography, TextField, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, CircularProgress } from '@mui/material';
 import { Search, Add } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -10,6 +10,7 @@ const ArticlesPage = () => {
   const [filteredArticles, setFilteredArticles] = useState([]);
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
     const fetchArticles = async () => {
@@ -26,6 +27,8 @@ const ArticlesPage = () => {
         }
       } catch (error) {
         console.error('Error fetching articles:', error);
+      } finally {
+        setLoading(false); 
       }
     };
     fetchArticles();
@@ -38,11 +41,6 @@ const ArticlesPage = () => {
     setFilteredArticles(filtered);
   };
 
-  const handleTopicSelection = (topic) => {
-    const filtered = articles.filter(article => article.topic === topic);
-    setFilteredArticles(filtered);
-  };
-
   const handleClickOpen = (article) => {
     setSelectedArticle(article);
     setDialogOpen(true);
@@ -52,6 +50,14 @@ const ArticlesPage = () => {
     setDialogOpen(false);
     setSelectedArticle(null);
   };
+
+  if (loading) {
+    return (
+      <Container maxWidth="md" sx={{ marginTop: '2rem', marginBottom: '2rem', width: '70%', textAlign: 'center' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="md" sx={{ marginTop: '2rem', marginBottom: '2rem', width: '70%' }}>

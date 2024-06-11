@@ -29,8 +29,7 @@ def is_student(user):
 def view_all_internships(request):
     form = InternshipSearchForm()
     internships = Internships.objects.filter(is_published=True).order_by('-created_at')
-    # print(f"internship id: {internships.id}")
-    # number_of_applicants = count_applicants(internships.id)
+    # number_of_applicants = count_applicants(internships)
     context = {'internships': internships}  # Initialize context with an empty list
     print(f"Request_Body: {request.body}")
     print(internships)
