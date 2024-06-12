@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Card, CardContent, Box, TextField, Button, Dialog, DialogActions, DialogContent, DialogTitle, Snackbar, Alert } from '@mui/material';
+import { Container, Typography, Card, CardContent, Box, TextField, Button, Dialog, DialogActions, DialogContent, DialogTitle, Snackbar, Alert, CircularProgress } from '@mui/material';
 import WorkIcon from '@mui/icons-material/Work';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -15,6 +15,8 @@ const Internship = () => {
   const [alertMessage, setAlertMessage] = useState('');
   const [alertSeverity, setAlertSeverity] = useState('success');
   const user = useSelector(selectUserState);
+  const [loading, setLoading] = useState(true); 
+
 
   const handleSearch = () => {
     const filtered = internships.filter((internship) =>
@@ -57,7 +59,6 @@ const Internship = () => {
         }
       );
 
-      // Parse the HTML response to check for specific messages
       const parser = new DOMParser();
       const doc = parser.parseFromString(response.data, 'text/html');
       const messages = doc.querySelector('.messages');
@@ -93,7 +94,6 @@ const Internship = () => {
   };
 
   useEffect(() => {
-    // Fetch data from Django backend
     const fetchData = async () => {
       try {
         const response = await fetch('http://127.0.0.1:8000/view_all_internships/');
@@ -106,11 +106,21 @@ const Internship = () => {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-      }
+      } finally {
+      setLoading(false); 
+    }
     };
 
     fetchData();
   }, []);
+
+  if (loading) {
+    return (
+      <Container maxWidth="md" sx={{ marginTop: '2rem', marginBottom: '2rem', width: '70%', textAlign: 'center' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg">

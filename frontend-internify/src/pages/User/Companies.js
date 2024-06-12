@@ -1,25 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Typography, TextField, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import { Container, Grid, Typography, TextField, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, CircularProgress } from '@mui/material';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 const Companies = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [companies, setCompanies] = useState([]);
   const [filteredCompanies, setFilteredCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [open, setOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
 
   useEffect(() => {
-    const companyData = [
-      { id: 1, name: 'Company One', description: 'Description for Company One.' },
-      { id: 2, name: 'Company Two', description: 'Description for Company Two.' },
-      { id: 3, name: 'Company Three', description: 'Description for Company Three.' },
-      { id: 4, name: 'Company Four', description: 'Description for Company Four.' },
-      { id: 5, name: 'Company Five', description: 'Description for Company Five.' },
-      { id: 6, name: 'Company Six', description: 'Description for Company Six.' },
-    ];
-    setCompanies(companyData);
-    setFilteredCompanies(companyData);
+    const fetchCompanies = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:8000/get_company/');
+        console.log('API response:', response.data);
+
+        if (response.data && Array.isArray(response.data.companies)) {
+          const processedData = response.data.companies.map(company => ({
+            id: company.pk,
+            name: company.fields.name,
+            address: company.fields.address,
+            email: company.fields.email,
+            description: company.fields.description,
+            user: company.fields.user
+          }));
+          setCompanies(processedData);
+          setFilteredCompanies(processedData);
+          console.log('Companies set:', processedData);
+        } else {
+          console.error('Invalid data format:', response.data);
+          setError('Fetched data does not contain a companies array');
+        }
+      } catch (error) {
+        console.error('Error fetching companies:', error);
+        setError('Error fetching companies');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCompanies();
   }, []);
 
   const handleSearch = () => {
@@ -38,6 +61,22 @@ const Companies = () => {
     setOpen(false);
     setSelectedCompany(null);
   };
+
+  if (loading) {
+    return (
+      <Container maxWidth="md" sx={{ marginTop: '2rem', marginBottom: '2rem', width: '70%', textAlign: 'center' }}>
+        <CircularProgress />
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="md" sx={{ marginTop: '2rem', marginBottom: '2rem', width: '70%', textAlign: 'center' }}>
+        <Typography variant="body1" color="error">{error}</Typography>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="md" sx={{ marginTop: '2rem', marginBottom: '2rem', width: '70%' }}>
@@ -90,7 +129,10 @@ const Companies = () => {
         <DialogTitle>{selectedCompany ? selectedCompany.name : 'Company'}</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            {selectedCompany ? selectedCompany.description : 'No description available.'}
+            {selectedCompany ? `Address: ${selectedCompany.address}` : 'No address available.'}
+          </DialogContentText>
+          <DialogContentText>
+            {selectedCompany ? `Email: ${selectedCompany.email}` : 'No email available.'}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
