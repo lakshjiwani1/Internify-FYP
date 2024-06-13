@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Typography, TextField, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, CircularProgress } from '@mui/material';
+import { Container, Grid, Typography, TextField, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, CircularProgress, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -11,6 +11,23 @@ const Companies = () => {
   const [error, setError] = useState(null);
   const [open, setOpen] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
+  const [reviewsOpen, setReviewsOpen] = useState(false);
+
+  // Hard-coded reviews
+  const reviews = [
+    {
+      title: "Great place to work",
+      content: "I had a wonderful experience working here. The team is supportive and the work environment is very positive."
+    },
+    {
+      title: "Excellent growth opportunities",
+      content: "The company offers numerous opportunities for professional growth. I was able to advance my career significantly."
+    },
+    {
+      title: "Work-life balance",
+      content: "The work-life balance here is amazing. Flexible working hours and understanding management."
+    }
+  ];
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -60,6 +77,14 @@ const Companies = () => {
   const handleClose = () => {
     setOpen(false);
     setSelectedCompany(null);
+  };
+
+  const handleReviewsOpen = () => {
+    setReviewsOpen(true);
+  };
+
+  const handleReviewsClose = () => {
+    setReviewsOpen(false);
   };
 
   if (loading) {
@@ -113,9 +138,9 @@ const Companies = () => {
                   <Button variant="outlined" color="primary" onClick={() => handleClickOpen(company)} sx={{ marginRight: '1rem' }}>
                     View Company
                   </Button>
-                  <Link to={`/companies/${company.id}/reviews`} style={{ textDecoration: 'none' }}>
-                    <Button variant="outlined" color="secondary">Reviews</Button>
-                  </Link>
+                  <Button variant="outlined" color="secondary" onClick={handleReviewsOpen}>
+                    Reviews
+                  </Button>
                 </CardContent>
               </Card>
             </Grid>
@@ -137,6 +162,23 @@ const Companies = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={reviewsOpen} onClose={handleReviewsClose}>
+        <DialogTitle>Company Reviews</DialogTitle>
+        <DialogContent>
+          {reviews.map((review, index) => (
+            <Box key={index} sx={{ marginBottom: 2 }}>
+              <Typography variant="h6">{review.title}</Typography>
+              <Typography variant="body2" color="textSecondary">{review.content}</Typography>
+            </Box>
+          ))}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleReviewsClose} color="primary">
             Close
           </Button>
         </DialogActions>

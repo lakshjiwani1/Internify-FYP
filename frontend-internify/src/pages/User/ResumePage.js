@@ -61,8 +61,8 @@ const Resume = () => {
         withCredentials: true,
       });
       console.log('Response data: ', response.data)
-      if (response.data && response.data.success) {
-        navigate('/submittedresume');
+      if (response.data) {
+        navigate('/submittedresume', {state:{resumeData:response.data}});
       } else if (response.data && response.data.message) {
         console.error('Error analyzing resume:', response.data.message);
       } else {

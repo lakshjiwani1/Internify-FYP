@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { selectUserState } from "../../store/user/user-slice";
-import { format } from 'date-fns';
+import { format, isBefore, startOfToday } from 'date-fns';
 import {
   Container, Grid, Typography, FormControlLabel, Radio, RadioGroup, FormControl, FormLabel, Button, TextField, Alert
 } from '@mui/material';
@@ -48,12 +48,41 @@ const InternshipForm = () => {
     enableReinitialize: true,
     validationSchema: Yup.object().shape({
       title: Yup.string().required('Title is required'),
-      start_date: Yup.string().required('Start Date is required'),
-      end_date: Yup.string().required('End Date is required'),
+      start_date: Yup.date().required('Start Date is required').test(
+        'start_date',
+        'Start date must be after today',
+        (value) => value && isBefore(startOfToday(), new Date(value))
+      ),
+      end_date: Yup.date().required('End Date is required').test(
+        'end_date',
+        'End date must be after start date',
+        function (value) {
+          const { start_date } = this.parent;
+          return value && new Date(value) > new Date(start_date);
+        }
+      ),
       location: Yup.string().required('Location is required'),
       required_skills: Yup.string().required('Required Skills are required'),
       qualifications: Yup.string().required('Qualifications are required'),
-      application_deadline: Yup.string().required('Application Deadline is required'),
+      application_deadline: Yup.date().required('Application Deadline is required').test(
+        'application_deadline',
+        'Application deadline must be after today',
+        (value) => value && isBefore(startOfToday(), new Date(value))
+      ).test(
+        'application_deadline',
+        'Application deadline must be before start date',
+        function (value) {
+          const { start_date, end_date } = this.parent;
+          return value && new Date(value) < new Date(start_date) && new Date(value) <= new Date(end_date);
+        }
+      ).test(
+        'application_deadline',
+        'Application deadline and start date cannot be the same day',
+        function (value) {
+          const { start_date } = this.parent;
+          return value && start_date && new Date(value).toDateString() !== new Date(start_date).toDateString();
+        }
+      ),
     }),
     onSubmit: async (values) => {
       try {
@@ -88,7 +117,6 @@ const InternshipForm = () => {
   });
 
   useEffect(() => {
-    console.log("internship", internship)
     if (internship) {
       formik.setValues({
         title: internship.title,
