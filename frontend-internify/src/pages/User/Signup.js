@@ -20,6 +20,7 @@ const SignupForm = () => {
       password2: '',
     },
     onSubmit: async (values) => {
+      console.log(formik.username)
       console.log(formik.password1);
       console.log(formik.password2);
 

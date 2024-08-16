@@ -35,7 +35,7 @@ def add_article(request):
     if serializer.is_valid():
         # Save the validated data
         serializer.save()
-        return Response({"message": "Article added successfully"}, status=status.HTTP_201_CREATED)
+        return Response({"message": "Article added successfully"}, status=status.HTTP_200_OK)
     else:
         # Raise a ValidationError with serializer errors
         raise ValidationError(serializer.errors)
@@ -51,6 +51,13 @@ def view_articles(request):
 
     # Return a Response object with the article data
     return Response({'articles': list(articles)})
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def view_all_articles(request):
+    articles = Article.objects.filter().values()
+    return Response({'articles': list(articles)})
+
 
 @csrf_exempt
 def update_article(request, article_id):

@@ -10,22 +10,48 @@ const MyArticles = () => {
   const [articles, setArticles] = useState([]);
   const navigate = useNavigate();
   const user = useSelector(selectUserState);
+  const [token, setToken] = useState('');
+  const [filteredArticles, setFilteredArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Function to fetch token from local storage
+    const fetchToken = () => {
+      const storedToken = localStorage.getItem('access_token'); // Token key from LoginForm
+      setToken(storedToken);
+    };
+
+    fetchToken();
+  }, []);
 
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/view_articles/');
-        console.log('Fetched articles:', response.data);
-        
-        const fetchedArticles = response.data.articles || [];
-        setArticles(fetchedArticles);
+        const response = await axios.get('http://127.0.0.1:8000/view_articles/', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        console.log('API response:', response.data);
+
+        if (response.data && Array.isArray(response.data.articles)) {
+          setArticles(response.data.articles);
+          setFilteredArticles(response.data.articles);
+          console.log('Articles set:', response.data.articles);
+        } else {
+          console.error('Invalid data format:', response.data);
+        }
       } catch (error) {
-        console.error('Error fetching articles:', error.response ? error.response.data : error.message);
+        console.error('Error fetching articles:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchArticles();
-  }, []);
+    if (token) { // Ensure token is available before making request
+      fetchArticles();
+    }
+  }, [token]);
 
 
   const handleUpdateArticle = (article) => {

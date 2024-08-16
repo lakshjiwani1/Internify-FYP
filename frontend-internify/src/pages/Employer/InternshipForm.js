@@ -93,6 +93,8 @@ const InternshipForm = () => {
           start_date: format(new Date(values.start_date), 'yyyy-MM-dd'),
           end_date: format(new Date(values.end_date), 'yyyy-MM-dd'),
           application_deadline: format(new Date(values.application_deadline), 'yyyy-MM-dd'),
+          is_published: values.is_published,
+          accept_applications: values.accept_applications,
         };
         const url = id 
           ? `http://127.0.0.1:8000/update_internship/${id}/` 
@@ -127,8 +129,8 @@ const InternshipForm = () => {
         required_skills: internship.required_skills,
         qualifications: internship.qualifications,
         application_deadline: internship.application_deadline,
-        is_published: internship.is_published ? 'yes' : 'no',
-        accept_applications: internship.accept_applications ? 'yes' : 'no',
+        is_published: internship.is_published ? true : false,
+        accept_applications: internship.accept_applications ? true : false,
       });
     }
   }, [internship]);
@@ -263,8 +265,8 @@ const InternshipForm = () => {
                 value={formik.values.is_published}
                 onChange={formik.handleChange}
               >
-                <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-                <FormControlLabel value="no" control={<Radio />} label="No" />
+                <FormControlLabel value={true} control={<Radio />} label="Yes" />
+                <FormControlLabel value={false} control={<Radio />} label="No" />
               </RadioGroup>
             </FormControl>
           </Grid>
@@ -278,8 +280,8 @@ const InternshipForm = () => {
                 value={formik.values.accept_applications}
                 onChange={formik.handleChange}
               >
-                <FormControlLabel value="yes" control={<Radio />} label="Yes" />
-                <FormControlLabel value="no" control={<Radio />} label="No" />
+                <FormControlLabel value={true} control={<Radio />} label="Yes" />
+                <FormControlLabel value={false} control={<Radio />} label="No" />
               </RadioGroup>
             </FormControl>
           </Grid>

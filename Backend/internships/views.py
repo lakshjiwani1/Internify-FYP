@@ -42,7 +42,7 @@ def create_internship(request):
         if serializer.is_valid():
             # Save the internship but assign the company manually
             internship = serializer.save(company=company)
-            return Response({"message": "Internship added successfully"}, status=status.HTTP_201_CREATED)
+            return Response({"message": "Internship added successfully"}, status=status.HTTP_200_OK)
         else:
             # Raise validation error with the serializer errors
             raise ValidationError(serializer.errors)
@@ -52,43 +52,16 @@ def create_internship(request):
 
 
 # @user_passes_test(is_company)
-# @api_view(['GET'])
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def internship_list(request):
     form = InternshipSearchForm()
-    internships = Internships.objects.filter(is_published=True).order_by('-created_at')
-    context = {'internships': internships}  # Initialize context with an empty list
-    print(f"Request_Body: {request.body}")
-    print(internships)
+    internships = Internships.objects.filter(company__user = request.user).order_by('-created_at')
+    context = {'internships': internships}
     internships_json = serialize('json', internships)
-    print(f"Internships Json: {internships_json}")
-
     internships_data = json.loads(internships_json)
-    print(f"Internships data: {internships_data}")
-
     context = {'internships': internships_data}
-    print(f"Context: {context}")
-    print(f"Json Response: {JsonResponse(context)}")
-    # if request.method == 'GET':
-    #     form = InternshipSearchForm(request.GET)
-    #     if form.is_valid():
-    #         search_by = request.GET.get('search_by', 'company_name')  # Default to searching by company name
-    #         query = request.GET.get('query', '')
-    #         internships_json = serialize('json', internships)
-    #         internships_data = json.loads(internships_json)
-
-    #         # Start with all published internships
-    #         internships = Internships.objects.filter(is_published=True).order_by('-created_at')
-    #         internships_list = [model_to_dict(internship) for internship in internships]
-    #         # Perform the search based on the selected option
-    #         if query:
-    #             if search_by == 'company_name':
-    #                 internships = internships.filter(company__name__icontains=query)
-    #             elif search_by == 'internship_name':
-    #                 internships = internships.filter(title__icontains=query)
-
-    #         context = {'query': query, 'internships': internships_data}
-
-    # return render(request, 'students/internship_list.html', context)
+    
     return JsonResponse(context)
   
 @csrf_exempt
@@ -111,6 +84,8 @@ def internship_detail(request, pk):
 @csrf_exempt
 # @user_passes_test(is_company)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def update_internship(request, pk):
     message = []
     print(f"Line 104")

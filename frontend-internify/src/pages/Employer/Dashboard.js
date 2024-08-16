@@ -96,7 +96,7 @@ const EmployerDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/view_all_internships/', {
+        const response = await axios.get('http://127.0.0.1:8000/internship_list/', {
           headers: {
             'X-CSRFToken': user.token,
             'Authorization': `Bearer ${user.token}`, // Ensure the user is authenticated
