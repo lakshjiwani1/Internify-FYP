@@ -12,6 +12,11 @@ from django.contrib.auth import get_user_model
 from authentication.models import Student
 from internships.models import Internships
 from django.db.models import Count
+import jwt
+from django.conf import settings
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+
 
 # Create your views here.
 
@@ -70,34 +75,58 @@ def view_all_internships(request):
 
 
 # @user_passes_test(is_student)
+
 @csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def apply_to_internship(request, internship_id):
     messages = []
     internship = get_object_or_404(Internships, pk=internship_id)
-    user_id = 59
+
+    # Extract JWT token from Authorization header
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return JsonResponse({'error': 'Authorization header missing or invalid'}, status=401)
+
+    token = auth_header.split(' ')[1]
+
+    try:
+        # Decode JWT token to get the user info
+        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        user_id = decoded_token.get('user_id')
+    except jwt.ExpiredSignatureError:
+        return JsonResponse({'error': 'Token has expired'}, status=401)
+    except jwt.InvalidTokenError:
+        return JsonResponse({'error': 'Invalid token'}, status=401)
+
+    # Fetch the user based on user_id from the token
     User = get_user_model()
-    print("getting user")
-    user = User.objects.get(pk=user_id)
-    print(f"User: {user}")
-    # student = request.user.student
-    student = Student.objects.get(user=user)
-    print(f"Student: {student}")
+    try:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found'}, status=404)
+
+    # Fetch the student associated with the user
+    try:
+        student = Student.objects.get(user=user)
+    except Student.DoesNotExist:
+        return JsonResponse({'error': 'Student profile not found'}, status=404)
+
     if internship.accept_applications and internship.is_application_period_active():
         if request.method == 'POST':
             # Check if the student has already applied
             if Application.objects.filter(internship=internship, student=student).exists():
                 messages.append('You have already applied to this internship.')
-                # return render(request, 'student/apply_error.html')
                 return render(request, 'students/apply_to_internship.html', {'internship': internship, 'messages': messages})
             else:
                 messages.append(f"Applied to {internship.title} internship successfully")
-            # Create a new application
-            application = Application(internship=internship, student=student, cv_file=student.cv_file)
-            application.save()
-            
-            return render(request, 'students/apply_success.html', {'internship_title': internship.title, 'messages': messages})
+                # Create a new application
+                application = Application(internship=internship, student=student, cv_file=student.cv_file)
+                application.save()
+                return render(request, 'students/apply_success.html', {'internship_title': internship.title, 'messages': messages})
     else:
         messages.append(f"Applications closed for {internship.title}.")
+
     return render(request, 'students/apply_to_internship.html', {'internship': internship, 'messages': messages})
 
 # def internship_search(request):

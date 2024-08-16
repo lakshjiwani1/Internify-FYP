@@ -38,9 +38,9 @@ const Internship = () => {
   const handleApply = async () => {
     if (!selectedInternship) return;
 
-    const csrfToken = user.token;
-    if (!csrfToken) {
-      setAlertMessage('CSRF token not found');
+    const jwtToken = user.token;
+    if (!jwtToken) {
+      setAlertMessage('JWT token not found');
       setAlertSeverity('error');
       setAlertOpen(true);
       return;
@@ -52,8 +52,7 @@ const Internship = () => {
         {},
         {
           headers: {
-            'Authorization': `Bearer ${user.token}`,
-            'X-CSRFToken': csrfToken,
+            'Authorization': `Bearer ${jwtToken}`,
           },
           withCredentials: true,
         }
