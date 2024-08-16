@@ -2,7 +2,7 @@ from django.shortcuts import render
 from .forms import ArticleForm
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from .serializers import ArticleSerializer
 from rest_framework.response import Response
 from .models import Article
@@ -10,6 +10,14 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
+from rest_framework.permissions import IsAuthenticated
+from django.core.exceptions import ValidationError
+from .serializers import ArticleSerializer
+from rest_framework import status
+
+
 
 
 # Create your views here.
@@ -17,40 +25,32 @@ from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 # @login_required
 # @csrf_protect
 # @ensure_csrf_cookie
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def add_article(request):
-    if request.method == 'POST':
-        form = ArticleForm(request.POST)
-        form.load_json_data(request.body)
-        print(f"csrf: {request.COOKIES.get('csrftoken')}")
-        try:
-            form.full_clean()
-        except form.ValidationError as e:
-            errors = e.message_dict
-            return JsonResponse({'errors': errors}, status=400)
-
-        try:
-            csrf_token = request.COOKIES.get('csrftoken')
-            print(f"csrf token: {csrf_token}")
-            print(f"User: {request.user}")
-            article = form.save(commit=False)
-            article.author_id = 48
-            # article.author = request.user.id
-            article.save()
-            return JsonResponse({'success': True})
-        except AttributeError as e:
-            return JsonResponse({'success': False, 'message': str(e)})
-        except Exception as e:
-            return JsonResponse({'success': False, 'message': str(e)})
+    # Create serializer instance with the request data
+    serializer = ArticleSerializer(data=request.data)
+    
+    # Validate the serializer
+    if serializer.is_valid():
+        # Save the validated data
+        serializer.save()
+        return Response({"message": "Article added successfully"}, status=status.HTTP_201_CREATED)
     else:
-        form = ArticleForm()
-        return render(request, 'internships/create_internship.html', {'form': form})
+        # Raise a ValidationError with serializer errors
+        raise ValidationError(serializer.errors)
 
-# @api_view(['GET'])
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def view_articles(request):
-    # Filter articles by student_id (assuming a ForeignKey relationship)
-    articles = Article.objects.filter(author__id=48).values()
-    return JsonResponse({'articles': list(articles)})
+    # Get the ID of the logged-in user
+    user_id = request.user.id
+
+    # Filter articles by the logged-in user's ID
+    articles = Article.objects.filter(author__id=user_id).values()
+
+    # Return a Response object with the article data
+    return Response({'articles': list(articles)})
 
 @csrf_exempt
 def update_article(request, article_id):

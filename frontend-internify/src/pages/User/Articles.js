@@ -10,12 +10,27 @@ const ArticlesPage = () => {
   const [filteredArticles, setFilteredArticles] = useState([]);
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState('');
+
+  useEffect(() => {
+    // Function to fetch token from local storage
+    const fetchToken = () => {
+      const storedToken = localStorage.getItem('access_token'); // Token key from LoginForm
+      setToken(storedToken);
+    };
+
+    fetchToken();
+  }, []);
 
   useEffect(() => {
     const fetchArticles = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/view_articles/');
+        const response = await axios.get('http://127.0.0.1:8000/view_articles/', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
         console.log('API response:', response.data);
 
         if (response.data && Array.isArray(response.data.articles)) {
@@ -28,11 +43,14 @@ const ArticlesPage = () => {
       } catch (error) {
         console.error('Error fetching articles:', error);
       } finally {
-        setLoading(false); 
+        setLoading(false);
       }
     };
-    fetchArticles();
-  }, []);
+
+    if (token) { // Ensure token is available before making request
+      fetchArticles();
+    }
+  }, [token]);
 
   const handleSearch = () => {
     const filtered = articles.filter(article =>

@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import configparser
 import os
+from datetime import timedelta
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -46,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
     'corsheaders',
     "debug_toolbar",
     'authentication',
@@ -56,6 +59,24 @@ INSTALLED_APPS = [
     # 'admin_interface',
     # 'colorfield',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
 INTERNAL_IPS = [
     # ...
     "127.0.0.1",
@@ -131,10 +152,10 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'internify',
         'USER': 'root',
-        # 'PASSWORD': 'root',
-        'PASSWORD': 'rootpassword',
-        # 'HOST':'localhost',
-        'HOST': 'internify-1.c924mayq6nod.eu-north-1.rds.amazonaws.com',
+        'PASSWORD': 'root',
+        # 'PASSWORD': 'rootpassword',
+        'HOST':'localhost',
+        # 'HOST': 'internify-1.c924mayq6nod.eu-north-1.rds.amazonaws.com',
         'PORT': '3306'
     }
 }

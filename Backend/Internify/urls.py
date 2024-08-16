@@ -19,6 +19,10 @@ from django.urls import include, path
 from authentication import views
 from django.conf import settings
 from django.conf.urls.static import static
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,6 +31,8 @@ urlpatterns = [
     path('', include('students.urls')),
     path('', include('articles.urls')),
     path('', include('resume.urls')),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     # path('', views.home, name='home'),
     # path('signup/', views.signup, name='signup'),
 ]

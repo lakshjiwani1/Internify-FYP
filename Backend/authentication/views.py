@@ -29,6 +29,12 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 from django.http import HttpResponse
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import StudentSerializer
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -75,6 +81,20 @@ class CustomUserCreationForm(UserCreationForm):
         model = get_user_model()
         fields = ['email', 'username', 'password1', 'password2', 'first_name', 'last_name']
 
+def generate_jwt_token(user):
+    refresh = RefreshToken.for_user(user)
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
+
+# Function to generate JWT token
+def generate_jwt_token(user):
+    refresh = RefreshToken.for_user(user)
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
 
 def activate(request, uidb64, token):
     # print(f"Raw UID: {uidb64}, Raw Token: {token}")
@@ -128,88 +148,41 @@ def activate_email(request, user, to_email):
         # messages.error(request, f'Problem sending email to {to_email}, check your email address')
         return error_messages
 
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def signup(request):
     if request.user.is_authenticated:
-        return redirect('/')
+        return Response({'error': 'User already authenticated'}, status=status.HTTP_403_FORBIDDEN)
 
-    if request.method == 'POST':
-        form = CustomUserCreationForm(request.POST)
-        form.load_json_data(request.body)
-        try: 
-            form.full_clean()
-        except forms.ValidationError as e:
-            errors = e.message_dict
-            return JsonResponse({'errors': errors}, status=400)
-        
-        print(f"Form Errors: {form.errors}")    
-        print(f"Form Cleaned Data: {form.cleaned_data}")
-        try:
-            with transaction.atomic():
-                user = form.save(commit=False)
-                user.user_type = 1
-                user.is_active = False
-                user.save()
-                student = Student.objects.create(
-                    user=user,
-                    first_name=form.cleaned_data['first_name'],
-                    last_name=form.cleaned_data['last_name'],
-                    email=form.cleaned_data['email'],
-                )
-            
-                error_messages = activate_email(request, user, form.cleaned_data.get('email'))
-                # error_messages = None
-                if not error_messages:
-                    # return redirect(signup_success)
-                    response_data = {
-                        'id': user.id,
-                        'username': user.username,
-                        'is_active': user.is_active,
-                        'user_type' : user.user_type,
-                    }
-                    return JsonResponse({'response_data': response_data}, status=201, safe=False)
-                else:
-                    raise JsonResponse("Error activating email", safe=False)  # Trigger rollback
-        except:
-            raise JsonResponse('Value already exists', safe=False)
+    # Get data from request
+    user_type = request.data.get('user_type')
+    username = request.data.get('username')
+    password = request.data.get('password')
 
-    return JsonResponse({'error': 'Invalid Method'}, status=405)
+    if user_type not in ['1', '2']:
+        return Response({'error': 'Invalid user type.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    #     # if form.is_valid():
-    #         # print(form.cleaned_data)
-    #     try:
-    #         with transaction.atomic():
-    #             user = form.save(commit=False)
-    #             user.is_active = False
-    #             user.user_type = 1  # Assuming 1 is for students
-    #             user.save()
+    try:
+        # Create CustomUser
+        user = CustomUser.objects.create_user(username=username, user_type=user_type, password=password)
 
-    #             student = Student.objects.create(
-    #                 user=user,
-    #                 first_name=form.cleaned_data.get('first_name'),
-    #                 last_name=form.cleaned_data.get('last_name'),
-    #                 email=form.cleaned_data.get('email')
-    #             )
+        # Create respective profile based on user_type
+        if user_type == '1':  # Student
+            student_data = request.data.get('student_data')
+            student_serializer = StudentSerializer(data=student_data)
+            if student_serializer.is_valid():
+                student_serializer.save(user=user)
+            else:
+                return Response(student_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    #             # error_messages = activate_email(request, user, form.cleaned_data.get('email'))
-    #             error_messages = activate_email(request, user, form.cleaned_data.get('email'))
 
-    #             if not error_messages:
-    #                 return redirect(signup_success)
-    #             else:
-    #                 raise ValidationError("Error activating email")  # Trigger rollback
+        # Generate JWT token
+        token = generate_jwt_token(user)
 
-    #     except (ValidationError, IntegrityError):
-    #         messages.error(request, 'Error processing your request. Please try again.')
+        return Response({'user': username, 'tokens': token}, status=status.HTTP_201_CREATED)
 
-    #     else:
-    #         messages.error(request, 'Invalid form submission. Please check the form.')
-
-    # else:
-    #     form = CustomUserCreationForm()
-
-    # return render(request, 'authentication/signup.html', {'form': form})
-
+    except Exception as e:
+        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 def signup_success(request):
     return render(request, 'authentication/signup_success.html')
@@ -239,7 +212,8 @@ def get_user_information(username):
 
 # @csrf_protect
 # @require_POST 
-@csrf_exempt
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def signin(request):
     if request.user.is_authenticated:
         return JsonResponse({'success': True, 'redirect': '/'})
@@ -247,43 +221,37 @@ def signin(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body.decode('utf-8'))
-        except json.JSONDecodeError as e:
+        except json.JSONDecodeError:
             return JsonResponse({'success': False, 'error': 'Invalid JSON data'})
-        
+
         if not isinstance(data, dict):
             return JsonResponse({'success': False, 'error': 'Invalid JSON format. Expected a JSON object.'})
 
         username = data.get('username')
         password = data.get('password')
 
-        print(f"Username: {username}")
-        print(f"Password: {password}")
-
-        # print(f"User is_active status: {get_is_active_status(username)}")
-        # print(f"Types: {get_user_information(username)}")
-
         if not (username and password):
             return JsonResponse({'success': False, 'error': 'Username or password is missing'})
 
         user = authenticate(request, username=username, password=password)
-        
-        print(f"User: {user}")
 
         if user is not None:
             login(request, user)
-            csrf_token = request.COOKIES.get('csrftoken')
-            print(f"csrf token: {csrf_token}")
+            
+            # Generate JWT token
+            tokens = generate_jwt_token(user)
+
             User = get_user_model()
             try:
                 user = User.objects.get(username=username)
                 if user.user_type == 1:
                     profile = user.student
                     user_details = {
-                    'user_type': user.user_type,
-                    'first_name': profile.first_name,
-                    'last_name': profile.last_name,
-                    'email':profile.email,
-                    'user_id':profile.user_id,
+                        'user_type': user.user_type,
+                        'first_name': profile.first_name,
+                        'last_name': profile.last_name,
+                        'email': profile.email,
+                        'user_id': profile.user_id,
                     }
                 elif user.user_type == 2:
                     profile = user.companyauth
@@ -298,18 +266,15 @@ def signin(request):
                         'email': profile.email,
                         'user_id': profile.user_id
                     }
-                # print(F"User Details: {user}")
-                # print(f"User Type: {user_type}")
-                # get_csrf_token(request=request)
-                
-                return JsonResponse({'success': True, 'user_details': user_details})
+                # print(f"User Details: {user_details}")
+                print(f"Token: {tokens}")
+                return JsonResponse({'success': True, 'user_details': user_details, 'tokens': tokens})
             except User.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'User doesnot exist'})
+                return JsonResponse({'success': False, 'error': 'User does not exist'})
         else:
             return JsonResponse({'success': False, 'error': 'Invalid username or password'})
     else:
-        form = AuthenticationForm()
-        return render(request, 'authentication/signin.html', {'form': form})
+        return JsonResponse({'error': 'Invalid Method'}, status=405)
     
 
 def profile(request):

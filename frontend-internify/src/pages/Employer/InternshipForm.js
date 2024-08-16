@@ -21,6 +21,8 @@ const InternshipForm = () => {
   useEffect(() => {
     if (id) {
       const fetchInternship = async () => {
+        console.log('JWT Token', user.token)
+        console.log('IsAuthenticated', user.isAuthenticated)
         try {
           const response = await axios.get(`http://127.0.0.1:8000/internship_detail/${id}/`);
           setInternship(response.data);
@@ -98,8 +100,7 @@ const InternshipForm = () => {
         const method = id ? 'post' : 'post';
         const response = await axios[method](url, formattedValues, {
           headers: {
-            'X-CSRFToken': user.token,
-            'X-User-ID': user.details.user_id,
+            'Authorization': `Bearer ${user.token}`,
           },
         });
         

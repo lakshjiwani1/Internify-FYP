@@ -28,22 +28,18 @@ const ArticleForm = () => {
     };
 
     const handlePostArticle = async () => {
+        console.log("JWT Token:", user.token);  // Check if token exists
+        console.log("Is Authenticated:", user.isAuthenticated);
         if (!user.isAuthenticated) {
             navigate('/login');
             return;
         }
-
+    
         try {
-            const csrfToken = getCsrfToken();
-            if (!csrfToken) {
-                console.error('CSRF token not found');
-                return;
-            }
-
             const apiEndpoint = articleToEdit
                 ? `http://127.0.0.1:8000/update_article/${articleToEdit.id}/`
                 : 'http://127.0.0.1:8000/add_article/';
-
+    
             const response = await axios.post(apiEndpoint, {
                 title: title,
                 content: content,
@@ -51,14 +47,12 @@ const ArticleForm = () => {
                 author: user.details.user_id, 
             }, {
                 headers: {
-                    'Authorization': `Bearer ${user.token}`,
-                    'X-CSRFToken': csrfToken,
+                    'Authorization': `Bearer ${user.token}`, // No need for CSRF token
                 },
-                withCredentials: true, 
             });
-
+    
             console.log('API response:', response.data);
-
+    
             if (response.data.success) {
                 console.log("Article successfully submitted");
                 setTitle('');

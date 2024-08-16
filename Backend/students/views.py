@@ -74,7 +74,7 @@ def view_all_internships(request):
 def apply_to_internship(request, internship_id):
     messages = []
     internship = get_object_or_404(Internships, pk=internship_id)
-    user_id = 48
+    user_id = 59
     User = get_user_model()
     print("getting user")
     user = User.objects.get(pk=user_id)
@@ -178,7 +178,7 @@ def count_applicants(request, internships_id):
     return JsonResponse(internship_data)
 
 def track_application(request):
-    user_id = 48
+    user_id = 59
     User = get_user_model()
     print("getting user")
     user = User.objects.get(pk=user_id)
