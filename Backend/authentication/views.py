@@ -148,41 +148,60 @@ def activate_email(request, user, to_email):
         # messages.error(request, f'Problem sending email to {to_email}, check your email address')
         return error_messages
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
+@csrf_exempt
 def signup(request):
     if request.user.is_authenticated:
-        return Response({'error': 'User already authenticated'}, status=status.HTTP_403_FORBIDDEN)
+        return redirect('/')
 
-    # Get data from request
-    user_type = request.data.get('user_type')
-    username = request.data.get('username')
-    password = request.data.get('password')
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        
+        # Load JSON data if applicable
+        if request.body:
+            form.load_json_data(request.body)
+        
+        try:
+            form.full_clean()
+        except ValidationError as e:
+            errors = e.message_dict
+            return JsonResponse({'errors': errors}, status=400)
+        
+        print(f"Form Errors: {form.errors}")    
+        print(f"Form Cleaned Data: {form.cleaned_data}")
 
-    if user_type not in ['1', '2']:
-        return Response({'error': 'Invalid user type.'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            with transaction.atomic():
+                user = form.save(commit=False)
+                user.user_type = 1
+                user.is_active = False
+                user.save()
 
-    try:
-        # Create CustomUser
-        user = CustomUser.objects.create_user(username=username, user_type=user_type, password=password)
+                # Create student profile
+                student = Student.objects.create(
+                    user=user,
+                    first_name=form.cleaned_data['first_name'],
+                    last_name=form.cleaned_data['last_name'],
+                    email=form.cleaned_data['email'],
+                )
+                
+                # Activate email and handle errors
+                error_messages = activate_email(request, user, form.cleaned_data.get('email'))
+                if not error_messages:
+                    response_data = {
+                        'id': user.id,
+                        'username': user.username,
+                        'is_active': user.is_active,
+                        'user_type': user.user_type,
+                    }
+                    return JsonResponse({'response_data': response_data}, status=201, safe=False)
+                else:
+                    return JsonResponse({'error': "Error activating email"}, status=500, safe=False)
+        except Exception as e:
+            # Handle specific exceptions or log them
+            return JsonResponse({'error': str(e)}, status=500)
 
-        # Create respective profile based on user_type
-        if user_type == '1':  # Student
-            student_data = request.data.get('student_data')
-            student_serializer = StudentSerializer(data=student_data)
-            if student_serializer.is_valid():
-                student_serializer.save(user=user)
-            else:
-                return Response(student_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return JsonResponse({'error': 'Invalid Method'}, status=405)
 
-
-        # Generate JWT token
-        token = generate_jwt_token(user)
-
-        return Response({'user': username, 'tokens': token}, status=status.HTTP_201_CREATED)
-
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 def signup_success(request):
     return render(request, 'authentication/signup_success.html')

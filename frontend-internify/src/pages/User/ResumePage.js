@@ -52,7 +52,7 @@ const Resume = () => {
     formData.append('file', file);
     console.log("File 2", file);
     try {
-      const response = await axios.post('http://127.0.0.1:8000/resume/analyze_resume', formData, {
+      const response = await axios.post('http://127.0.0.1:8000/resume/extract_data_from_resume', formData, {
         headers: {
           'Authorization': `Bearer ${user.token}`,
           'X-CSRFToken': csrfToken,

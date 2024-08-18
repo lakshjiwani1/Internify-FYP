@@ -20,9 +20,9 @@ const SignupForm = () => {
       password2: '',
     },
     onSubmit: async (values) => {
-      console.log(formik.username)
-      console.log(formik.password1);
-      console.log(formik.password2);
+      console.log(values.username)
+      console.log(values.password1);
+      console.log(values.password2);
 
       try {
         const response = await axios.post('http://127.0.0.1:8000/signup/', values);

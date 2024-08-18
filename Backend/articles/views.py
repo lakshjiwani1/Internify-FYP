@@ -73,7 +73,7 @@ def update_article(request, article_id):
         if form.is_valid():
             article.last_edited = timezone.now()
             form.save()
-            return JsonResponse({'success': True})
+            return JsonResponse({'success': True}, status=status.HTTP_200_OK)
         else:
             return JsonResponse({'success': False, 'errors': form.errors}, status=400)
     else:

@@ -20,40 +20,12 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import Paragraph
 from reportlab.lib.enums import TA_CENTER
+# from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
-
-# @csrf_exempt
-# def extract_text_from_pdf(request):
-#     if request.method == 'POST':
-#         print(request.FILES)
-#         if 'file' not in request.FILES:
-#             return JsonResponse({'error': 'No file uploaded'}, status=400)
-#         try:
-#             file = request.FILES['file']
-#             temp_dir = os.path.join(settings.MEDIA_ROOT, 'student_cvs/')
-#             if not os.path.exists(temp_dir):
-#                 os.makedirs(temp_dir)
-#             saved_file_path = default_storage.save('student_cvs/' + file.name, file)
-#             print(f"saved_file_path: {saved_file_path}")
-#             # Extract filename from the saved file path
-#             saved_file_name = os.path.basename(saved_file_path)
-#             print(f"saved_file_name: {saved_file_name}")
-#             text = ""
-#             with open(os.path.join(settings.MEDIA_ROOT, saved_file_path), 'rb') as f:
-#                 reader = PyPDF2.PdfReader(f)
-#                 for page in reader.pages:
-#                     # page = reader.pages[page_num]
-#                     text += page.extract_text()
-
-#             resume_response = {
-#                 'text': text
-#             }
-#             return text
-#             # return JsonResponse({'response_data': resume_response})
-#         except Exception as e:
-#             return JsonResponse({'error': str(e)}, status=400)
-#     else:
-#         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 def extract_text_from_pdf(file_path):
     text = ""
@@ -94,69 +66,55 @@ def extract_text_from_docx(request):
             return JsonResponse({'error': str(e)}, status=400)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
-    
-# @csrf_exempt
-# def analyze_resume(request):
-#     if request.method == 'POST':
-#         print(request.FILES)
-#         try:
-#             user = request.user  # Assuming user is authenticated
-#             print(f"User ID: {user.id}")
-#             print(f"User Information: {user}")
-#             student = Student.objects.get(user=user)
-#             print(f"Student ID: {student.id}")
-#             print(f"Student Information: {student}")
-#             file = request.FILES['file']
-#             print(f"File Information: {file}")
-#             file_path = default_storage.save(f'student_cvs/{file.name}', file)
-#             print(f"File Path: {file_path}")
-#             full_file_path = os.path.join(settings.MEDIA_ROOT, file_path)
-#             print(f"Full File Path: {full_file_path}")
-#             file_extension = file.name.split('.')[-1].lower()
 
-#             if file_extension == 'pdf':
-#                 text = extract_text_from_pdf(full_file_path)
-#             elif file_extension == 'docx':
-#                 text = extract_text_from_docx(full_file_path)
-#             else:
-#                 return JsonResponse({'error': 'Unsupported file type'}, status=400)
+@csrf_exempt
+def extract_data_from_resume(request):
+    if request.method == 'POST':
+        print(request.FILES)
+        try:
+            file = request.FILES['file']
+            print(f"File Information: {file}")
+            file_path = default_storage.save(f'student_cvs/{file.name}', file)
+            print(f"File Path: {file_path}")
+            full_file_path = os.path.join(settings.MEDIA_ROOT, file_path)
+            print(f"Full File Path: {full_file_path}")
+            file_extension = file.name.split('.')[-1].lower()
 
-#             if not text:
-#                 return JsonResponse({'error': 'Failed to extract text from file'}, status=400)
-
-#             # Load the trained spaCy model
-#             model_path = os.path.join(settings.BASE_DIR, 'F:\\FYP\\Git\\Internify-FYP\\Internify\\Backend\\', 'spacy_model')  # Update this path
-#             print(f"Model Path: {model_path}")
-#             nlp = spacy.load(model_path)
-#             print(f"Model Loaded Successfully {nlp}")
-#             # Add the sentencizer component to the pipeline
-#             nlp.add_pipe('sentencizer')
-#             doc = nlp(text)
-
-#             skills = [ent.text for ent in doc.ents if ent.label_ == 'SKILLS']
-#             print(f"Skills: {skills}")
-#             education_fields = [ent.text for ent in doc.ents if ent.label_ == 'EDUCATION']
-#             print(f"Education: {education_fields}")
-#             summary = ' '.join([sent.text for sent in doc.sents])
-#             # print(f"Summary: {summary}")
+            if file_extension == 'pdf':
+                text = extract_text_from_pdf(full_file_path)
+                print(f"Resume Text: \n{text}")
+            model_path = os.path.join(settings.BASE_DIR, "F:\FYP\Git\Internify-FYP\Internify\Backend\output", 'model-best')            
+            print(f"Model Path: {model_path}")
+            nlp = spacy.load(model_path)
+            print(f"Model Loaded Successfully {nlp}")
+            # Add the sentencizer component to the pipeline
+            nlp.add_pipe('sentencizer')
+            doc = nlp(text)
+            print(f"Doc: {doc}")
+            education = []
+            skills = []
+            for ent in doc.ents:
+                if ent.label_ == "Education":
+                    education.append(ent.text)
+                elif ent.label_ == "Skills":
+                    skills.append(ent.text)
+            print(f"skills: {skills}")
+            print(f"Education: {education}")
+            summary = ' '.join([sent.text for sent in doc.sents])
+            response_data = {
+            'skills': skills,
+            'education_fields': education,
+            'summary': summary,
+        }
+            return JsonResponse(response_data, status=200)
+        except Exception as e:
+            print(f"Error: {str(e)}")  # Log the error
+            return JsonResponse({'error': str(e)}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
             
-#             resume, created = ResumeInfo.objects.get_or_create(student=user)
-#             resume.skills = ', '.join(skills)
-#             resume.education = ', '.join(education_fields)
-#             resume.summary = summary
-#             resume.save()
 
-#             response_data = {
-#                 'skills': skills,
-#                 'education_fields': education_fields,
-#                 'summary': summary,
-#             }
-#             return JsonResponse(response_data, status=200)
-#         except Exception as e:
-#             print(f"Error: {str(e)}")  # Log the error
-#             return JsonResponse({'error': str(e)}, status=400)
-#     else:
-#         return JsonResponse({'error': 'Invalid request method'}, status=405)
+
 
 @csrf_exempt
 def analyze_resume(request):
@@ -180,9 +138,10 @@ def analyze_resume(request):
             full_file_path = os.path.join(settings.MEDIA_ROOT, file_path)
             print(f"Full File Path: {full_file_path}")
             file_extension = file.name.split('.')[-1].lower()
-
+            
             if file_extension == 'pdf':
                 text = extract_text_from_pdf(full_file_path)
+                print(f"Resume Text: \n{text}")
             elif file_extension == 'docx':
                 text = extract_text_from_docx(full_file_path)
             else:
@@ -192,24 +151,32 @@ def analyze_resume(request):
                 return JsonResponse({'error': 'Failed to extract text from file'}, status=400)
 
             # Load the trained spaCy model
-            model_path = os.path.join(settings.BASE_DIR, 'F:\\FYP\\Git\\Internify-FYP\\Internify\\Backend\\', 'spacy_model')  # Update this path
+            # model_path = os.path.join(settings.BASE_DIR, 'F:\\FYP\\Git\\Internify-FYP\\Internify\\Backend\\', 'spacy_model')  # Update this path
+            model_path = os.path.join(settings.BASE_DIR, "F:\FYP\Git\Internify-FYP\Internify\Backend\output", 'model-best')            
             print(f"Model Path: {model_path}")
             nlp = spacy.load(model_path)
             print(f"Model Loaded Successfully {nlp}")
             # Add the sentencizer component to the pipeline
             nlp.add_pipe('sentencizer')
             doc = nlp(text)
-
-            skills = [ent.text for ent in doc.ents if ent.label_ == 'SKILLS']
+            education = []
+            skills = []
+            for ent in doc.ents:
+                if ent.label == "Education":
+                    education.append(ent.text)
+                elif ent.label == "Skills":
+                    skills.append(ent.text)
+            
+            # skills = [ent.text for ent in doc.ents if ent.label_ == 'SKILLS']
             print(f"Skills: {skills}")
-            education_fields = [ent.text for ent in doc.ents if ent.label_ == 'EDUCATION']
-            print(f"Education: {education_fields}")
+            # education_fields = [ent.text for ent in doc.ents if ent.label_ == 'EDUCATION']
+            print(f"Education: {education}")
             summary = ' '.join([sent.text for sent in doc.sents])
             # print(f"Summary: {summary}")
 
             response_data = {
                 'skills': skills,
-                'education_fields': education_fields,
+                'education_fields': education,
                 'summary': summary,
             }
             return JsonResponse(response_data, status=200)
@@ -218,15 +185,26 @@ def analyze_resume(request):
             return JsonResponse({'error': str(e)}, status=400)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
+    
 @csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def save_resume(request):
-    student_id = 35
-    user_id = 48
-    User = get_user_model()
-    user = User.objects.get(pk=user_id)
     if request.method == 'POST':
         try:
-            # user = request.user  # Assuming user is authenticated
+            # Extract token from headers
+            auth_header = request.headers.get('Authorization', None)
+            if not auth_header:
+                return JsonResponse({'error': 'Authorization header missing'}, status=401)
+
+            token = auth_header.split(' ')[1]  # Bearer token
+            jwt_auth = JWTAuthentication()
+            validated_token = jwt_auth.get_validated_token(token)
+            user_id = jwt_auth.get_user(validated_token).id
+
+            # Get user and student
+            User = get_user_model()
+            user = User.objects.get(pk=user_id)
             print(f"User ID: {user.id}")
             print(f"User Information: {user}")
             student = Student.objects.get(user=user)
@@ -237,6 +215,8 @@ def save_resume(request):
             skills = data.get('skills', [])
             education_fields = data.get('education_fields', [])
             summary = data.get('summary', '')
+            
+            # Get or create ResumeInfo object
             resume, created = ResumeInfo.objects.get_or_create(student=user)
             resume.skills = ', '.join(skills)
             resume.education = ', '.join(education_fields)
@@ -248,6 +228,8 @@ def save_resume(request):
                 'resume_id': resume.id
             }
             return JsonResponse(response_data, status=200)
+        except InvalidToken:
+            return JsonResponse({'error': 'Invalid or expired token'}, status=401)
         except Exception as e:
             print(f"Error: {str(e)}")  # Log the error
             return JsonResponse({'error': str(e)}, status=400)
