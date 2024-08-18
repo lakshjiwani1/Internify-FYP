@@ -10,8 +10,14 @@ import json
 
 class ContactNumberField(forms.CharField):
     def clean(self, value):
+        # Handle the case where value is None
+        if value is None:
+            raise forms.ValidationError('This field is required.')
+        
+        # Check if the contact number is valid
         if not all(char.isdigit() or char == '+' for char in value):
             raise forms.ValidationError('Invalid characters in the contact number.')
+        
         return super().clean(value)
 
 class CompanyRegistrationForm(UserCreationForm):

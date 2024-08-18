@@ -4,9 +4,12 @@ import * as Yup from 'yup';
 import { Button, Container, Grid, MenuItem, Typography, Paper, useMediaQuery, useTheme, TextField } from '@mui/material';
 import { EStyledField, Flexbox } from '../../misc/MUIComponent';
 import { Box } from '@mui/system';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
 
 const SignupForm = () => {
+    const navigate = useNavigate();
     const formik = useFormik({
         initialValues: {
             name: '',
@@ -21,9 +24,47 @@ const SignupForm = () => {
             website: '',
             description: '',
         },
-        onSubmit: (values) => {
-            console.log('Form Submitted', values);
-            // Backend work here.
+        onSubmit: async (values) => {
+            console.log(values.name)
+            console.log(values.email)
+            console.log(values.username)
+            console.log(values.password)
+            console.log(values.confirmPassword)
+            console.log(values.contactNumber)
+            console.log(values.taxId)
+            console.log(values.address)
+            console.log(values.industryType)
+            console.log(values.website)
+            console.log(values.description)
+            try {
+                const response = await axios.post('http://127.0.0.1:8000/register/company', values);
+                console.log('Signup Response: ', response.data)
+
+                if (response.status == 200) {
+                    const data = await response.json();
+                    console.log('Form Submitted Successfully:', data);
+                    navigate('/login');
+                    // Handle success (e.g., redirect or show a success message)
+                } else {
+                    // const errorData = await response.json();
+                    // console.error('Error:', errorData);
+                    console.error('Signup failed:', response.data.error);
+                    console.log('status: ', response.status)
+                    console.log('values: ', values)
+                    // Handle errors (e.g., show error messages)
+                }
+            } catch (error) {
+                if (error.response) {
+                    // Server responded with a status other than 2xx
+                    console.error('Error response:', error.response.data);
+                } else if (error.request) {
+                    // Request was made but no response received
+                    console.error('Error request:', error.request);
+                } else {
+                    // Something else happened
+                    console.error('Error message:', error.message);
+                }
+            }
         },
         validationSchema: Yup.object({
             name: Yup.string().required('Required'),
@@ -42,7 +83,6 @@ const SignupForm = () => {
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-
 
     return (
         <Flexbox
@@ -203,8 +243,8 @@ const SignupForm = () => {
                                     error={formik.touched.industryType && Boolean(formik.errors.industryType)}
                                     helperText={formik.touched.industryType && formik.errors.industryType}
                                 >
-                                    <MenuItem value="technology">Technology</MenuItem>
-                                    <MenuItem value="finance">Finance</MenuItem>
+                                    <MenuItem value="Accounting">Accounting</MenuItem>
+                                    <MenuItem value="Banking & Financial Services">Banking & Financial Services</MenuItem>
                                     <MenuItem value="healthcare">Healthcare</MenuItem>
                                 </EStyledField>
                             </Grid>
