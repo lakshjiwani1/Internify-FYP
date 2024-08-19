@@ -17,7 +17,7 @@ class Student(models.Model):
     email = models.EmailField(unique=True)
     profile_picture = models.ImageField(upload_to='student_profile_pics/', null=True, blank=True)
     cv_file = models.FileField(upload_to='student_cvs/', null=True, blank=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
     
 
     def __str__(self):
@@ -52,7 +52,7 @@ class CompanyAuth(models.Model):
     website_url = models.CharField(max_length=255)
     description = models.TextField(default="description")
     email = models.EmailField(unique=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username

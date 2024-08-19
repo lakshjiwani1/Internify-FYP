@@ -28,10 +28,9 @@ const SignupForm = () => {
       user_type: "1",
     },
     onSubmit: async (values) => {
-      console.log("Submitting values:", values);
-      console.log(values.username);
-      console.log(values.password1);
-      console.log(values.user_type);
+      console.log(formik.username)
+      console.log(formik.password1);
+      console.log(formik.password2);
 
       try {
         const response = await axios.post(
