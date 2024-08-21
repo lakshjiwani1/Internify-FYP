@@ -83,7 +83,7 @@ def extract_data_from_resume(request):
             if file_extension == 'pdf':
                 text = extract_text_from_pdf(full_file_path)
                 print(f"Resume Text: \n{text}")
-            model_path = os.path.join(settings.BASE_DIR, "F:\FYP\Git\Internify-FYP\Internify\Backend\output", 'model-best')            
+            model_path = os.path.join(settings.BASE_DIR, "D:\laksh\Semesters\FYP\FYP-2\Internify\Backend\output", 'model-best')            
             print(f"Model Path: {model_path}")
             nlp = spacy.load(model_path)
             print(f"Model Loaded Successfully {nlp}")
@@ -152,7 +152,7 @@ def analyze_resume(request):
 
             # Load the trained spaCy model
             # model_path = os.path.join(settings.BASE_DIR, 'F:\\FYP\\Git\\Internify-FYP\\Internify\\Backend\\', 'spacy_model')  # Update this path
-            model_path = os.path.join(settings.BASE_DIR, "F:\FYP\Git\Internify-FYP\Internify\Backend\output", 'model-best')            
+            model_path = os.path.join(settings.BASE_DIR, "D:\laksh\Semesters\FYP\FYP-2\Internify\Backend\output", 'model-best')            
             print(f"Model Path: {model_path}")
             nlp = spacy.load(model_path)
             print(f"Model Loaded Successfully {nlp}")

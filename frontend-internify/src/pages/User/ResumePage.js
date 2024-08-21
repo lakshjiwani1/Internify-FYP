@@ -32,41 +32,32 @@ const Resume = () => {
     setFileAlertOpen(false);
   };
 
-  const getCsrfToken = () => {
-    return user.token;
-  };
-
   const handleSubmit = async () => {
     if (!file) {
       setFileAlertOpen(true);
       return;
     }
 
-    const csrfToken = getCsrfToken();
-    if (!csrfToken) {
-      console.error('CSRF token not found');
-      return;
-    }
+    const jwtToken = user.token; // Use JWT token for authorization
 
     const formData = new FormData();
     formData.append('file', file);
-    console.log("File 2", file);
+
     try {
       const response = await axios.post('http://127.0.0.1:8000/resume/extract_data_from_resume', formData, {
         headers: {
-          'Authorization': `Bearer ${user.token}`,
-          'X-CSRFToken': csrfToken,
+          'Authorization': `Bearer ${jwtToken}`, 
           'Content-Type': 'multipart/form-data',
         },
-        withCredentials: true,
       });
-      console.log('Response data: ', response.data)
+
+      console.log('Response data: ', response.data);
+
       if (response.data) {
-        navigate('/submittedresume', {state:{resumeData:response.data}});
+        navigate('/submittedresume', { state: { resumeData: response.data } });
       } else if (response.data && response.data.message) {
         console.error('Error analyzing resume:', response.data.message);
       } else {
-        console.log(response.data.success);
         console.error('Unexpected response from backend:', response.data);
       }
     } catch (error) {
@@ -87,8 +78,8 @@ const Resume = () => {
           </Typography>
           
           <Box sx={{ marginBottom: '1rem' }}>
-            <Typography variant="body2" color="textSecondary">
               Upload your resume (PDF only):
+            <Typography variant="body2" color="textSecondary">
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '0.5rem' }}>
               <Button

@@ -3,16 +3,19 @@ import { NavLink } from 'react-router-dom';
 import { TextField, InputAdornment, IconButton } from '@mui/material';
 import { AccountCircle, Lock } from '@mui/icons-material';
 
-const NavItem = styled(NavLink)(({ theme, isActive }) => ({
-  fontWeight: 500,
-  fontSize: "1rem",
-  color: isActive ? "#F53855" : "#4F5665",
-  textDecoration: 'none',
-  wordWrap: "break-word",
-  '&:hover': {
-    color: "#F53855",
-  },
-}));
+const NavItem = styled(({ isActive, ...rest }) => <NavLink {...rest} />)(
+  ({ theme, isActive }) => ({
+    fontWeight: 500,
+    fontSize: "1rem",
+    color: isActive ? "#F53855" : "#4F5665",
+    textDecoration: 'none',
+    wordWrap: "break-word",
+    '&:hover': {
+      color: "#F53855",
+    },
+  })
+);
+
 
 const Flexbox = styled(Box)({
   display: 'flex',
