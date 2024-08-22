@@ -1,3 +1,4 @@
+// src/index.js or src/App.js (depending on where the router is set up)
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import Root from "./pages/User/Root";
 import HomePage from "./pages/User/Home";
@@ -25,63 +26,79 @@ import AdminPanel from "./pages/AdminPanel";
 const userRoutes = [
   {
     path: '/',
-    element: (
-      <ProtectedRoute redirectTo="/internships">
-        <HomePage />
-      </ProtectedRoute>
-    )
+    element: <ProtectedRoute><HomePage /></ProtectedRoute>
   },
   {
     path: '/internships',
-    element: <Internships />
+    element: <ProtectedRoute><Internships /></ProtectedRoute>
   },
   {
     path: '/signup',
-    element: (
-      <ProtectedRoute redirectTo="/internships">
-        <Signup />
-      </ProtectedRoute>
-    )
+    element: <ProtectedRoute><Signup /></ProtectedRoute>
   },
   {
     path: '/login',
-    element: (
-      <ProtectedRoute redirectTo="/internships">
-        <Login />
-      </ProtectedRoute>
-    )
+    element: <ProtectedRoute><Login /></ProtectedRoute>
   },
-  { path: '/articles', element: <Articles /> },
-  { path: '/articleform', element: <ArticleForm /> },
-  { path: '/articleform/:id', element: <ArticleForm /> },
-  { path: '/companies', element: <Companies /> },
-  { path: "/resume", element: <Resume/>},
-  { path: "/submittedresume", element: <SubmitResume/>},
-  { path: '/myapplications', element: <MyApplications /> },
-  { path: '/myarticles', element: <MyArticles/>},
-  { path: '/adminpanel', element: <AdminPanel/>}
+  {
+    path: '/articles',
+    element: <ProtectedRoute><Articles /></ProtectedRoute>
+  },
+  {
+    path: '/articleform',
+    element: <ProtectedRoute><ArticleForm /></ProtectedRoute>
+  },
+  {
+    path: '/articleform/:id',
+    element: <ProtectedRoute><ArticleForm /></ProtectedRoute>
+  },
+  {
+    path: '/companies',
+    element: <ProtectedRoute><Companies /></ProtectedRoute>
+  },
+  {
+    path: "/resume",
+    element: <ProtectedRoute><Resume /></ProtectedRoute>
+  },
+  {
+    path: "/submittedresume",
+    element: <ProtectedRoute><SubmitResume /></ProtectedRoute>
+  },
+  {
+    path: '/myapplications',
+    element: <ProtectedRoute><MyApplications /></ProtectedRoute>
+  },
+  {
+    path: '/myarticles',
+    element: <ProtectedRoute><MyArticles /></ProtectedRoute>
+  },
+  {
+    path: '/adminpanel',
+    element: <ProtectedRoute><AdminPanel /></ProtectedRoute>
+  }
 ];
 
 const employerRoutes = [
   {
     path: '/esignup',
-    element: (
-      <ProtectedRoute redirectTo="/employer">
-        <EmployerSignup />
-      </ProtectedRoute>
-    )
+    element: <ProtectedRoute><EmployerSignup /></ProtectedRoute>
   },
   {
     path: '/login',
-    element: (
-      <ProtectedRoute redirectTo="/employer">
-        <Login />
-      </ProtectedRoute>
-    )
+    element: <ProtectedRoute><Login /></ProtectedRoute>
   },
-  { path: '/employer', element: <EmployerDashboard /> },
-  { path: '/internshipform', element: <InternshipForm /> },
-  { path: "/internshipform/:id", element: <InternshipForm/>}
+  {
+    path: '/employer',
+    element: <ProtectedRoute><EmployerDashboard /></ProtectedRoute>
+  },
+  {
+    path: '/internshipform',
+    element: <ProtectedRoute><InternshipForm /></ProtectedRoute>
+  },
+  {
+    path: "/internshipform/:id",
+    element: <ProtectedRoute><InternshipForm /></ProtectedRoute>
+  }
 ];
 
 const router = createBrowserRouter([
