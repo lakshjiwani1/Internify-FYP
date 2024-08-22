@@ -52,7 +52,6 @@ const SubmitResume = () => {
       const saveResponse = await axios.post('http://127.0.0.1:8000/resume/save_resume', resumeData, {
         headers: {
           'Authorization': `Bearer ${csrfToken}`,
-          'X-CSRFToken': csrfToken,
         },
       });
 

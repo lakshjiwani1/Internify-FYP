@@ -121,7 +121,7 @@ def apply_to_internship(request, internship_id):
             else:
                 messages.append(f"Applied to {internship.title} internship successfully")
                 # Create a new application
-                application = Application(internship=internship, student=student, cv_file=student.cv_file)
+                application = Application(internship=internship, student=student)
                 application.save()
                 return render(request, 'students/apply_success.html', {'internship_title': internship.title, 'messages': messages})
     else:

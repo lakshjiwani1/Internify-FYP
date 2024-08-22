@@ -12,7 +12,8 @@ from django.contrib import messages
 from django.core.serializers import serialize
 import json
 from .forms import InternshipSearchForm
-from authentication.models import CompanyAuth
+from authentication.models import CompanyAuth, Student
+from resume.models import ResumeInfo
 from django.contrib.auth import get_user_model
 import jwt
 from rest_framework import status
@@ -20,6 +21,7 @@ from django.conf import settings
 # from serializers import InternshipSerializer
 from django.core.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
+from django.core.mail import send_mail
 
 
 
@@ -145,17 +147,67 @@ def delete_internship(request, pk):
     # return redirect('internship_list')
 
 def view_applications(request, internship_id):
-    # Get the company of the logged-in user
     company = request.user.companyauth
-
-    # Get the specific internship for the company
     internship = get_object_or_404(Internships, id=internship_id, company=company)
-
-    # Get all applications for the specific internship
     applications = Application.objects.filter(internship=internship)
+    
+    print(f"Company: {company}")
+    print(f"Internship: {internship}")
+    print(f"Application: {applications}")
+    internship_data = {
+        'id': internship.id,
+        'title': internship.title,
+        # 'description': internship.description,
 
-    context = {'internship': internship, 'applications': applications}
-    return render(request, 'internships/view_applications.html', context)
+    }
+    print("Getting company data")
+    company_data = {
+        'id': company.id,
+        'name': company.name,
+    }
+    print("Getting application data")
+    applications_data = []
+    for application in applications:
+        student_id = application.student_id
+        print(f"Student ID: {student_id}")
+        # Fetch the corresponding student entry from the Student table
+        student = get_object_or_404(Student, id=student_id)
+        user_id = student.user_id
+        print(f"User ID: {user_id}")
+
+        # Fetch data from ResumeInfo using user_id
+        resume = ResumeInfo.objects.filter(student_id=user_id).first()
+
+        # Serialize resume data
+        resume_data = None
+        if resume:
+            resume_data = {
+                'id': resume.id,
+                'skills': resume.skills,
+                'education': resume.education,
+            }
+
+        applications_data.append({
+            'id': application.id,
+            'student': {
+                'id': application.student.id,
+                'first_name': application.student.first_name,
+                'last_name': application.student.last_name,
+                'email': application.student.email,
+
+            },
+            'status': application.application_status,
+            'applied_at': application.applied_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'resume': resume_data
+        })
+
+        response_data = {
+            'company': company_data,
+            'internship': internship_data,
+            'application': applications_data
+        }
+
+    return JsonResponse({'success':True, 'data':response_data})
 
 
 def get_company(request):
@@ -164,3 +216,27 @@ def get_company(request):
         company_auth_json = serialize('json', companies)
         company_data = json.loads(company_auth_json)
         return JsonResponse({'companies': company_data})
+    
+@csrf_exempt
+def accept_application(request, application_id):
+    company = request.user.companyauth
+    application = get_object_or_404(Application, id=application_id)
+    internship = application.internship
+    student_id = application.student_id
+    student = get_object_or_404(Student, id=student_id)
+    user_email = student.email
+    print(f"application: {application}")
+    print(f"student_id: {student_id}")
+    print(f"student: {student}")
+    print(f"user_email: {user_email}")
+    # Update application status
+    application.application_status = 'Accepted'
+    application.save()
+    company_name = company.name
+    subject = 'Application Accepted from ' + company_name
+    email_body = "Congratulations on your successful application for " + internship.title + " from " + company_name
+    try:
+        send_mail(subject, email_body, "internify3@gmail.com", [user_email])
+        return JsonResponse({'success':True, 'message': 'Email sent successfully'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Error sending email: {str(e)}'}, status=500)

@@ -186,14 +186,18 @@ def analyze_resume(request):
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
     
-@csrf_exempt
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@csrf_exempt
 def save_resume(request):
+    user = request.user
+    print(user)
     if request.method == 'POST':
         try:
             # Extract token from headers
             auth_header = request.headers.get('Authorization', None)
+            print(f"Auth Header: {auth_header}")
             if not auth_header:
                 return JsonResponse({'error': 'Authorization header missing'}, status=401)
 
@@ -310,9 +314,10 @@ def save_resume_as_pdf(content, filename="resume.pdf", user_info=None):
 
     c.showPage()
     c.save()
-    print(f"Resume saved to {filename}")
+    full_path = os.path.abspath(filename)
+    print(f"Resume saved to {full_path}")
 
-
+@csrf_exempt
 def generate_resume(request):
     api_key = 'AIzaSyAl5qBDoGd_M1k09zRfbAHmK3soGfnacVw'
     initialize_gemini_api(api_key)
@@ -325,10 +330,11 @@ def generate_resume(request):
     "Certifications & Awards": "Certifications & Awards",
     "Additional Experience": "Additional Information"
     }
-    
-    user_id = 59
+    user = request.user.id
+    # user_id = 59
+    print(f"User: {user}")
     User = get_user_model()
-    user = User.objects.get(pk=user_id)
+    user = User.objects.get(pk=user)
     print(f"User ID: {user.id}")
     print(f"User Information: {user}")
     student = Student.objects.get(user=user)

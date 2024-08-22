@@ -29,4 +29,6 @@ class Internships(models.Model):
 class Application(models.Model):
     internship = models.ForeignKey(Internships, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    cv_file = models.FileField(upload_to='student_cvs/')
+    # cv_file = models.FileField(upload_to='student_cvs/')
+    application_status = models.CharField(max_length=20, default='Pending')
+    applied_at = models.DateTimeField(auto_now_add=True)
