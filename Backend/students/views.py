@@ -16,6 +16,7 @@ import jwt
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
+from django.utils import timezone
 
 
 # Create your views here.
@@ -82,7 +83,7 @@ def view_all_internships(request):
 def apply_to_internship(request, internship_id):
     messages = []
     internship = get_object_or_404(Internships, pk=internship_id)
-
+    print(f"Application deadline: {internship.application_deadline}")
     # Extract JWT token from Authorization header
     auth_header = request.headers.get('Authorization')
     if not auth_header or not auth_header.startswith('Bearer '):
@@ -111,6 +112,9 @@ def apply_to_internship(request, internship_id):
         student = Student.objects.get(user=user)
     except Student.DoesNotExist:
         return JsonResponse({'error': 'Student profile not found'}, status=404)
+
+    if internship.application_deadline < timezone.now().date():
+        return JsonResponse({'success': False, 'message': 'The deadline for accepting applications has passed.'}, status=400)
 
     if internship.accept_applications and internship.is_application_period_active():
         if request.method == 'POST':

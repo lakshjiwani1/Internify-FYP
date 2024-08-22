@@ -52,12 +52,12 @@ const SubmitResume = () => {
     try {
       const response = await axios.post('http://127.0.0.1:8000/resume/save_resume', resumeData, {
         headers: {
-          'Authorization': `Bearer ${csrfToken}`,
-          'X-CSRFToken': csrfToken,
+          'Authorization': `Bearer ${jwtToken}`,
         },
+        responseType: 'blob',
       });
 
-      if (saveResponse.data.success) {
+      if (response.status === 200) {
         console.log('Resume saved successfully');
       } else {
         console.error('Error generating resume:', response.data.message);
