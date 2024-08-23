@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { selectUserState } from '../../store/user/user-slice';
+import resumeImage from '../../assets/resume.png'; 
 
 const SubmitResume = () => {
   const location = useLocation();
@@ -12,18 +13,15 @@ const SubmitResume = () => {
   const [skills, setSkills] = useState([]);
   const [newSkill, setNewSkill] = useState('');
   const [education, setEducation] = useState('');
-  const [experience, setExperience] = useState('');
+  const [resumeGenerated, setResumeGenerated] = useState(false); 
   const user = useSelector(selectUserState);
 
   useEffect(() => {
-    // console.log("Location state: ", location.state);
     if (location.state && location.state.resumeData) {
-      const { name, skills, education, experience } = location.state.resumeData;
-      console.log(location.state.resumeData);
+      const { name, skills, education } = location.state.resumeData;
       setName(name);
       setSkills(skills);
       setEducation(education);
-      setExperience(experience);
     }
   }, [location.state]);
 
@@ -45,10 +43,8 @@ const SubmitResume = () => {
       name,
       skills,
       education,
-      experience,
     };
 
-    console.log("Resume Data being sent:", resumeData);
     try {
       const response = await axios.post('http://127.0.0.1:8000/resume/save_resume', resumeData, {
         headers: {
@@ -57,8 +53,36 @@ const SubmitResume = () => {
         responseType: 'blob',
       });
 
-      if (response.status === 200) {
-        console.log('Resume saved successfully');
+      if (response.status === 200 || response.status === 201) {
+        console.log('Resume details saved successfully');
+        setResumeGenerated(true); 
+      } else {
+        console.error('Error saving resume details:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error saving resume details:', error.response ? error.response.data : error.message);
+    }
+  };
+
+  const handleDownloadResume = async () => {
+    const jwtToken = user.token;
+
+    try {
+      const response = await axios.get('http://127.0.0.1:8000/resume/generate_resume', {
+        headers: {
+          'Authorization': `Bearer ${jwtToken}`,
+        },
+        responseType: 'blob',
+      });
+
+      if (response.status === 200 || response.status === 201) {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'resume.pdf');
+        document.body.appendChild(link);
+        link.click();
+        console.log('Resume downloaded successfully');
       } else {
         console.error('Error generating resume:', response.data.message);
       }
@@ -67,18 +91,13 @@ const SubmitResume = () => {
     }
   };
 
-
-
   return (
     <Box sx={{ padding: '2rem', marginTop: 3 }}>
-      <Grid container spacing={2} justifyContent="center">
-        <Grid item xs={12}>
+      <Grid container spacing={4} justifyContent="center">
+        <Grid item xs={12} md={6}>
           <Typography variant="h5" gutterBottom sx={{ textAlign: 'center' }}>
             Enter Additional Details
           </Typography>
-        </Grid>
-
-        <Grid item xs={12} md={5}>
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Typography variant="subtitle1" sx={{ marginBottom: '0.5rem' }}>
@@ -123,11 +142,6 @@ const SubmitResume = () => {
                 </Button>
               </Box>
             </Grid>
-          </Grid>
-        </Grid>
-
-        <Grid item xs={12} md={5}>
-          <Grid container spacing={2}>
             <Grid item xs={12}>
               <Typography variant="subtitle1" sx={{ marginBottom: '0.5rem' }}>
                 Education
@@ -139,30 +153,42 @@ const SubmitResume = () => {
                 onChange={(e) => setEducation(e.target.value)}
               />
             </Grid>
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" sx={{ marginBottom: '0.5rem' }}>
-                Experience
-              </Typography>
-              <TextField
-                variant="outlined"
-                fullWidth
-                value={experience}
-                onChange={(e) => setExperience(e.target.value)}
-              />
-            </Grid>
           </Grid>
+          <Box sx={{ textAlign: 'center', marginTop: '2rem' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleGenerateResume}
+            >
+              Submit
+            </Button>
+          </Box>
+        </Grid>
+
+        <Grid item xs={12} md={6} sx={{ textAlign: 'center' }}>
+          <img
+            src={resumeImage}
+            alt="Resume Preview"
+            style={{ width: '80%', height: 'auto', marginBottom: '1rem', marginTop: '-1rem' }} 
+          />
+          <Typography variant="h6">
+            {resumeGenerated
+              ? "Your ATS-Friendly Resume is Ready! Download now by clicking the button below."
+              : "Save your details now to get a generated Resume"}
+          </Typography>
+          {resumeGenerated && (
+            <Box sx={{ textAlign: 'center', marginTop: '2rem' }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleDownloadResume}
+              >
+                Download
+              </Button>
+            </Box>
+          )}
         </Grid>
       </Grid>
-
-      <Box sx={{ textAlign: 'center', marginTop: '2rem' }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleGenerateResume}
-        >
-          Generate Resume
-        </Button>
-      </Box>
     </Box>
   );
 };
