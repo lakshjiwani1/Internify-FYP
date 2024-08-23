@@ -83,8 +83,8 @@ def extract_data_from_resume(request):
             if file_extension == 'pdf':
                 text = extract_text_from_pdf(full_file_path)
                 print(f"Resume Text: \n{text}")
-            # model_path = os.path.join(settings.BASE_DIR, "F:\FYP\Git\Internify-FYP\Internify\Backend\output", 'model-best')            
-            model_path = os.path.join(settings.BASE_DIR, "D:\laksh\Semesters\FYP\FYP-2\Internify\Backend\output", 'model-best')            
+            model_path = os.path.join(settings.BASE_DIR, 'F:\FYP\Git\Internify-FYP\Internify\Backend\output', 'model-best')            
+            # model_path = os.path.join(settings.BASE_DIR, "D:\laksh\Semesters\FYP\FYP-2\Internify\Backend\output", 'model-best')            
             print(f"Model Path: {model_path}")
             nlp = spacy.load(model_path)
             print(f"Model Loaded Successfully {nlp}")
@@ -152,8 +152,8 @@ def analyze_resume(request):
                 return JsonResponse({'error': 'Failed to extract text from file'}, status=400)
 
             # Load the trained spaCy model
-            # model_path = os.path.join(settings.BASE_DIR, 'F:\\FYP\\Git\\Internify-FYP\\Internify\\Backend\\', 'spacy_model')  # Update this path
-            model_path = os.path.join(settings.BASE_DIR, "D:\laksh\Semesters\FYP\FYP-2\Internify\Backend\output", 'model-best')            
+            model_path = os.path.join(settings.BASE_DIR, 'F:\FYP\Git\Internify-FYP\Internify\Backend\output', 'model-best')  # Update this path
+            # model_path = os.path.join(settings.BASE_DIR, "D:\laksh\Semesters\FYP\FYP-2\Internify\Backend\output", 'model-best')            
             print(f"Model Path: {model_path}")
             nlp = spacy.load(model_path)
             print(f"Model Loaded Successfully {nlp}")
@@ -320,63 +320,76 @@ def save_resume_as_pdf(content, filename="resume.pdf", user_info=None):
 
 @csrf_exempt
 def generate_resume(request):
-    api_key = 'AIzaSyAl5qBDoGd_M1k09zRfbAHmK3soGfnacVw'
-    initialize_gemini_api(api_key)
-    llm = ChatGoogleGenerativeAI(model="gemini-pro")
+    try: 
+        auth_header = request.headers.get('Authorization', None)
+        print(f"Auth Header: {auth_header}")
+        if not auth_header:
+            return JsonResponse({'error': 'Authorization header missing'}, status=401)
 
-    headings = {
-    "Professional Summary": "Professional Summary",
-    "Education": "Education",
-    "Skills": "Skills",
-    "Certifications & Awards": "Certifications & Awards",
-    "Additional Experience": "Additional Information"
-    }
-    user = request.user.id
-    # user_id = 59
-    print(f"User from line 335: {user}")
-    print(f"User: {user}")
-    User = get_user_model()
-    user = User.objects.get(pk=user)
-    print(f"User ID: {user.id}")
-    print(f"User Information: {user}")
-    student = Student.objects.get(user=user)
-    print(f"Student ID: {student.id}")
-    print(f"Student Information: {student}")
-    print(f"Student First Name: {student.first_name}")
-    print(f"Student Last Name: {student.last_name}")
-    print(f"Student Email: {student.email}")
-    resume, created = ResumeInfo.objects.get_or_create(student=user)
-    print(f"Resume: {resume}")
-    print(f"Education from Resume: {resume.education}")
-    print(f"Resume Skills: {resume.skills}")
+        token = auth_header.split(' ')[1]  # Bearer token
+        jwt_auth = JWTAuthentication()
+        validated_token = jwt_auth.get_validated_token(token)
+        user_id = jwt_auth.get_user(validated_token).id
 
-    user_info = {
-        "name": student.first_name + student.last_name,
-        "last_name": student.last_name,
-        "email": student.email,
-        "skills": resume.skills,
-        "education": resume.education
-    }
+        api_key = 'AIzaSyAl5qBDoGd_M1k09zRfbAHmK3soGfnacVw'
+        initialize_gemini_api(api_key)
+        llm = ChatGoogleGenerativeAI(model="gemini-pro")
 
-    prompt = f"""
-    You are a professional resume writer. Your task is to create an ATS-friendly resume based on the following user details:
+        headings = {
+        "Professional Summary": "Professional Summary",
+        "Education": "Education",
+        "Skills": "Skills",
+        "Certifications & Awards": "Certifications & Awards",
+        "Additional Experience": "Additional Information"
+        }
+        # user = request.user.id
+        # user_id = 59
+        print(f"User_id from line 335: {user_id}")
+        print(f"User_id: {user_id}")
+        User = get_user_model()
+        user = User.objects.get(pk=user_id)
+        print(f"User ID: {user.id}")
+        print(f"User Information: {user}")
+        student = Student.objects.get(user=user)
+        print(f"Student ID: {student.id}")
+        print(f"Student Information: {student}")
+        print(f"Student First Name: {student.first_name}")
+        print(f"Student Last Name: {student.last_name}")
+        print(f"Student Email: {student.email}")
+        resume, created = ResumeInfo.objects.get_or_create(student=user)
+        print(f"Resume: {resume}")
+        print(f"Education from Resume: {resume.education}")
+        print(f"Resume Skills: {resume.skills}")
 
-    Name: {user_info['name']}
-    Email: {user_info['email']}
-    Education: {user_info['education']}
-    Skills: {', '.join(user_info['skills'])}
+        user_info = {
+            "name": student.first_name + student.last_name,
+            "last_name": student.last_name,
+            "email": student.email,
+            "skills": resume.skills,
+            "education": resume.education
+        }
 
-    Please ensure the resume is formatted in a clean and professional manner, suitable for Applicant Tracking Systems (ATS). The resume should include the following sections:
+        prompt = f"""
+        You are a professional resume writer. Your task is to create an ATS-friendly resume based on the following user details:
 
-    1. Contact Information
-    2. Professional Summary
-    3. Education
-    4. Skills
-    6. Certifications and Awards (if available)
+        Name: {user_info['name']}
+        Email: {user_info['email']}
+        Education: {user_info['education']}
+        Skills: {', '.join(user_info['skills'])}
 
-    Use the details provided to craft a compelling and concise resume. Make sure to use bullet points for easy readability in the skills and work experience sections. Highlight the most relevant skills and education qualifications that match typical job descriptions in the user's field. Ensure the formatting is simple and avoids graphics or complex layouts that might not be parsed correctly by ATS software.
-    """
-    result = llm.invoke(prompt)
-    print(result)
-    save_resume_as_pdf(result.content, user_info=user_info)
-    return JsonResponse({'success': True, 'user_info': user_info})
+        Please ensure the resume is formatted in a clean and professional manner, suitable for Applicant Tracking Systems (ATS). The resume should include the following sections:
+
+        1. Contact Information
+        2. Professional Summary
+        3. Education
+        4. Skills
+        6. Certifications and Awards (if available)
+
+        Use the details provided to craft a compelling and concise resume. Make sure to use bullet points for easy readability in the skills and work experience sections. Highlight the most relevant skills and education qualifications that match typical job descriptions in the user's field. Ensure the formatting is simple and avoids graphics or complex layouts that might not be parsed correctly by ATS software. Also dont add your own information in the response.
+        """
+        result = llm.invoke(prompt)
+        print(result)
+        save_resume_as_pdf(result.content, user_info=user_info)
+        return JsonResponse({'success': True, 'user_info': user_info, 'result':result.content})
+    except InvalidToken:
+        return JsonResponse({'error': 'Invalid or expired token'}, status=401)
