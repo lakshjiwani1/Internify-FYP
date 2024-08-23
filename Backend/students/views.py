@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.contrib.auth import get_user_model
 from authentication.models import Student
 from internships.models import Internships
+from resume.models import ResumeInfo
 from django.db.models import Count
 import jwt
 from django.conf import settings
@@ -106,12 +107,18 @@ def apply_to_internship(request, internship_id):
         user = User.objects.get(pk=user_id)
     except User.DoesNotExist:
         return JsonResponse({'error': 'User not found'}, status=404)
-
+    try:
+        resume = ResumeInfo.objects.get(student=user)
+    except ResumeInfo.DoesNotExist:
+        return JsonResponse({'message': 'Skills and Education data missing. Add data using Resume Builder'}, status=404)
     # Fetch the student associated with the user
     try:
         student = Student.objects.get(user=user)
     except Student.DoesNotExist:
         return JsonResponse({'error': 'Student profile not found'}, status=404)
+
+    if not resume.skills or not resume.education:
+        return JsonResponse({'message': 'Skills and Education data missing. Please add data using Resume Builder.'}, status=400)
 
     if internship.application_deadline < timezone.now().date():
         return JsonResponse({'success': False, 'message': 'The deadline for accepting applications has passed.'}, status=400)
@@ -211,7 +218,18 @@ def count_applicants(request, internships_id):
     return JsonResponse(internship_data)
 
 def track_application(request):
-    user_id = 59
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return JsonResponse({'error': 'Authorization header missing or invalid'}, status=401)
+    token = auth_header.split(' ')[1]
+    try:
+        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        user_id = decoded_token.get('user_id')
+    except jwt.ExpiredSignatureError:
+        return JsonResponse({'error': 'Token has expired'}, status=401)
+    except jwt.InvalidTokenError:
+        return JsonResponse({'error': 'Invalid token'}, status=401)
+    print(f"User Id Line 232: {user_id}")
     User = get_user_model()
     print("getting user")
     user = User.objects.get(pk=user_id)

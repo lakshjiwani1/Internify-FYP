@@ -240,3 +240,38 @@ def accept_application(request, application_id):
         return JsonResponse({'success':True, 'message': 'Email sent successfully'})
     except Exception as e:
         return JsonResponse({'success': False, 'message': f'Error sending email: {str(e)}'}, status=500)
+
+@csrf_exempt
+def reject_application(request, application_id):    
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        return JsonResponse({'error': 'Authorization header missing or invalid'}, status=401)
+    token = auth_header.split(' ')[1]
+    try:
+        decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        user_id = decoded_token.get('user_id')
+    except jwt.ExpiredSignatureError:
+        return JsonResponse({'error': 'Token has expired'}, status=401)
+    except jwt.InvalidTokenError:
+        return JsonResponse({'error': 'Invalid token'}, status=401)
+    
+    # company = request.user.companyauth
+    print(f"User ID: {user_id}")
+    application = get_object_or_404(Application, id=application_id)
+    internship = application.internship
+    print(f"Company ID from internship: {internship.company_id}")
+    
+    if user_id == internship.company_id:
+        student_id = application.student_id
+        student = get_object_or_404(Student, id=student_id)
+        print(f"application: {application}")
+        print(f"student_id: {student_id}")
+        print(f"student: {student}")
+        
+        application.application_status = 'Rejected'
+        application.save()
+
+        return JsonResponse({'success': True, 'message': "Application rejected successfully"})
+    else:
+        return JsonResponse({'success':False, 'message': 'This is not your company posted internship.'})
+    
