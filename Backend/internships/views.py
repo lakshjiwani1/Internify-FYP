@@ -75,10 +75,10 @@ def internship_detail(request, pk):
         'end_date': internship.end_date,
         'location': internship.location,
         'required_skills':internship.required_skills,
-        'qualification': internship.qualifications,
+        'qualifications': internship.qualifications,
         'application_deadline':internship.application_deadline,
         'is_published': internship.is_published,
-        'accept_application': internship.accept_applications
+        'accept_applications': internship.accept_applications
     }
     print(internship_data)
     return JsonResponse(internship_data)
