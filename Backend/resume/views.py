@@ -25,6 +25,9 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+import io
+from django.http import HttpResponse
+
 
 
 def extract_text_from_pdf(file_path):
@@ -264,18 +267,18 @@ def remove_asterisks(content):
 
 
 
-def save_resume_as_pdf(content, filename="resume.pdf", user_info=None):
+def save_resume_as_pdf(content, user_info=None):
     if user_info is None:
-        user_info = {'name': 'John Doe', 'phone': '123-456-7890'}  # Default user info
+        user_info = {'name': 'John Doe', 'email': 'john.doe@example.com'}  # Default user info
     content = remove_asterisks(content)
-    c = canvas.Canvas(filename)
+
+    buffer = io.BytesIO()  # Create an in-memory buffer
+    c = canvas.Canvas(buffer, pagesize=letter)
     width, height = letter
 
-    # Set initial y position
     y_position = height - 72
 
-    # Function to draw text with automatic wrapping
-    def draw_text(text, y_pos, max_width, font_size=12, font="Times-Roman", left_margin=56.7, right_margin=56.7, top_margin=56.7, bottom_margin=56.7, bold=False, align=None):
+    def draw_text(text, y_pos, max_width, font_size=12, font="Times-Roman", left_margin=56.7, right_margin=56.7, bold=False, align=None):
         style = getSampleStyleSheet()['Normal']
         style.fontName = font
         style.fontSize = font_size
@@ -288,25 +291,16 @@ def save_resume_as_pdf(content, filename="resume.pdf", user_info=None):
         p.drawOn(c, left_margin, y_pos - p.height)
         return y_pos - p.height - 4
 
-    # Split the content into lines
     lines = content.split('\n')
 
-    # Draw the name at the top in bold and centered
     c.setFont("Times-Bold", 16)
     c.drawCentredString(width / 2, y_position, user_info['name'])
-    y_position -= 20  # Adjust for larger font size
+    y_position -= 20
 
-    # Draw the phone number below the name in normal text
     c.setFont("Times-Roman", 12)
-    c.drawString(72, y_position, f"Phone: {user_info['email']}")
-    y_position -= 18  # Adjust for normal font size
+    c.drawString(72, y_position, f"Email: {user_info['email']}")
+    y_position -= 18
 
-    # # Draw the phone number below the name in normal text
-    # c.setFont("Times-Roman", 12)
-    # c.drawString(72, y_position, f"Email: {user_info['email']}")
-    # y_position -= 16
-
-    # Draw each line with formatting
     for line in lines:
         if line.strip() in ["Professional Summary", "Education", "Skills", "Certifications and Awards"]:
             y_position = draw_text(line.strip(), y_position, width - 72, font_size=14, bold=True)
@@ -315,8 +309,9 @@ def save_resume_as_pdf(content, filename="resume.pdf", user_info=None):
 
     c.showPage()
     c.save()
-    full_path = os.path.abspath(filename)
-    print(f"Resume saved to {full_path}")
+
+    buffer.seek(0)  # Rewind the buffer to the beginning
+    return buffer.getvalue()  # Return the PDF content as bytes
 
 @csrf_exempt
 def generate_resume(request):
@@ -389,7 +384,12 @@ def generate_resume(request):
         """
         result = llm.invoke(prompt)
         print(result)
-        save_resume_as_pdf(result.content, user_info=user_info)
-        return JsonResponse({'success': True, 'user_info': user_info, 'result':result.content})
+        # save_resume_as_pdf(result.content, user_info=user_info)
+        # return JsonResponse({'success': True, 'user_info': user_info, 'result':result.content})
+        pdf_bytes = save_resume_as_pdf(result.content, user_info=user_info)
+
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename="resume.pdf"'
+        return response
     except InvalidToken:
         return JsonResponse({'error': 'Invalid or expired token'}, status=401)

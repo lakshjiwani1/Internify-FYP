@@ -71,6 +71,7 @@ const SubmitResume = () => {
       const response = await axios.get('http://127.0.0.1:8000/resume/generate_resume', {
         headers: {
           'Authorization': `Bearer ${jwtToken}`,
+          'Content-Type': 'application/json',
         },
         responseType: 'blob',
       });
