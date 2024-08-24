@@ -3,6 +3,7 @@ config.ini
 myenv
 media
 Backend/spacy_model
+Backend/output
 =======
 media*pyc
 >>>>>>> c3a2bb011cd569d077a41763faa623f65d41d2e3

@@ -201,17 +201,26 @@ def apply_to_internship(request, internship_id):
 def count_applicants(request, internships_id):
     internship = get_object_or_404(Internships, pk=internships_id)
 
-    applicant_count = internship.application_set.count()
+    applicants = []
 
-    applicants = internship.application_set.select_related('student').values(
-        'student__first_name', 'student__email'
-    )
-
+    for application in internship.application_set.select_related('student').all():
+        student = application.student
+        resume_info = ResumeInfo.objects.filter(student=student.user_id).first()
+        print(f"resume_info: {resume_info}")
+        applicant_data = {
+            'first_name': student.first_name,
+            'last_name':student.last_name,
+            'email': student.email,
+            'skills': resume_info.skills,
+            'education': resume_info.education,
+        }
+        applicants.append(applicant_data)
+    
     internship_data = {
         'id': internship.id,
         'title': internship.title,
         # ... other internship details as needed
-        'applicant_count': applicant_count,
+        'applicant_count': len(applicants),
         'applicants': list(applicants),
     }
 

@@ -40,35 +40,39 @@ def extract_text_from_pdf(file_path):
     return text 
 
 # @csrf_exempt
-def extract_text_from_docx(request):
-    if request.method == 'POST':
-        print(request.FILES)
-        if 'file' not in request.FILES:
-            return JsonResponse({'error': 'No file uploaded'}, status=400)
-        try:
-            file = request.FILES['file']
-            temp_dir = os.path.join(settings.MEDIA_ROOT, 'student_cvs/')
-            if not os.path.exists(temp_dir):
-                os.makedirs(temp_dir)
-            saved_file_path = default_storage.save('student_cvs/' + file.name, file)
-            print(f"saved_file_path: {saved_file_path}")
-            # Extract filename from the saved file path
-            saved_file_name = os.path.basename(saved_file_path)
-            print(f"saved_file_name: {saved_file_name}")
-            text = ""
-            doc = docx.Document(os.path.join(settings.MEDIA_ROOT, saved_file_path))
-            for para in doc.paragraphs:
-                text += para.text + "\n"
+def extract_text_from_docx(file_path):
+    # if request.method == 'POST':
+    #     print(request.FILES)
+    #     if 'file' not in request.FILES:
+    #         return JsonResponse({'error': 'No file uploaded'}, status=400)
+    #     try:
+    #         file = request.FILES['file']
+    #         temp_dir = os.path.join(settings.MEDIA_ROOT, 'student_cvs/')
+    #         if not os.path.exists(temp_dir):
+    #             os.makedirs(temp_dir)
+    #         saved_file_path = default_storage.save('student_cvs/' + file.name, file)
+    #         print(f"saved_file_path: {saved_file_path}")
+    #         # Extract filename from the saved file path
+    #         saved_file_name = os.path.basename(saved_file_path)
+    #         print(f"saved_file_name: {saved_file_name}")
+    #         text = ""
+    #         doc = docx.Document(os.path.join(settings.MEDIA_ROOT, saved_file_path))
+    #         for para in doc.paragraphs:
+    #             text += para.text + "\n"
 
-            resume_response = {
-                'text': text
-            }
-            # return JsonResponse({'response_data': resume_response})
-            return text
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-    else:
-        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    #         resume_response = {
+    #             'text': text
+    #         }
+    #         # return JsonResponse({'response_data': resume_response})
+    #         return text
+    #     except Exception as e:
+    #         return JsonResponse({'error': str(e)}, status=400)
+    # else:
+    #     return JsonResponse({'error': 'Invalid request method'}, status=405)
+    with open(file_path, 'rb') as f:
+        text = f.read()
+        return text
+
 
 @csrf_exempt
 def extract_data_from_resume(request):
@@ -86,6 +90,9 @@ def extract_data_from_resume(request):
             if file_extension == 'pdf':
                 text = extract_text_from_pdf(full_file_path)
                 print(f"Resume Text: \n{text}")
+            # elif file_extension == 'docx':
+            #     text = extract_text_from_docx(full_file_path)
+                # print(f"Resume Text from docx: {text}")
             model_path = os.path.join(settings.BASE_DIR, 'F:\FYP\Git\Internify-FYP\Internify\Backend\output', 'model-best')            
             # model_path = os.path.join(settings.BASE_DIR, "D:\laksh\Semesters\FYP\FYP-2\Internify\Backend\output", 'model-best')            
             print(f"Model Path: {model_path}")
@@ -224,7 +231,7 @@ def save_resume(request):
             education_fields = data.get('education_fields', [])
             summary = data.get('summary', '')
             
-            # Get or create ResumeInfo object
+            # Get or create fo object
             resume, created = ResumeInfo.objects.get_or_create(student=user)
             resume.skills = ', '.join(skills)
             resume.education = ', '.join(education_fields)
