@@ -83,7 +83,7 @@ def internship_detail(request, pk):
     print(internship_data)
     return JsonResponse(internship_data)
 
-@csrf_exempt
+@csrf_exempt 
 # @user_passes_test(is_company)
 
 @api_view(['POST'])

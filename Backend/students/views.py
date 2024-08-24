@@ -226,6 +226,47 @@ def count_applicants(request, internships_id):
 
     return JsonResponse(internship_data)
 
+# def track_application(request):
+#     auth_header = request.headers.get('Authorization')
+#     if not auth_header or not auth_header.startswith('Bearer '):
+#         return JsonResponse({'error': 'Authorization header missing or invalid'}, status=401)
+#     token = auth_header.split(' ')[1]
+#     try:
+#         decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+#         user_id = decoded_token.get('user_id')
+#     except jwt.ExpiredSignatureError:
+#         return JsonResponse({'error': 'Token has expired'}, status=401)
+#     except jwt.InvalidTokenError:
+#         return JsonResponse({'error': 'Invalid token'}, status=401)
+#     print(f"User Id Line 232: {user_id}")
+#     User = get_user_model()
+#     print("getting user")
+#     user = User.objects.get(pk=user_id)
+#     print(f"User: {user}")
+#     print("Getting student")
+#     student = Student.objects.get(user=user)
+#     print(f"Student: {student}")
+
+#     # Filter internships where student_id matches the logged-in user's student
+#     internships = Internships.objects.filter(application__student=student).distinct()
+#     # context = internships
+#     internships_json = serialize('json', internships)
+#     print(f"Internships Json: {internships_json}")
+#     print(f"Internships: {internships}")
+#     context = {'internships': internships}
+#     internships_data = json.loads(internships_json)
+#     print(f"Internships data: {internships_data}")
+
+#     context = {'internships': internships_data}
+#     print(f"Context: {context}")
+
+#     return JsonResponse(context)
+    # return render(request, 'your_template.html', context)
+    # else:
+    #     # Redirect to login page if not authenticated
+    #     return redirect('login')
+
+
 def track_application(request):
     auth_header = request.headers.get('Authorization')
     if not auth_header or not auth_header.startswith('Bearer '):
@@ -238,30 +279,27 @@ def track_application(request):
         return JsonResponse({'error': 'Token has expired'}, status=401)
     except jwt.InvalidTokenError:
         return JsonResponse({'error': 'Invalid token'}, status=401)
-    print(f"User Id Line 232: {user_id}")
-    User = get_user_model()
-    print("getting user")
-    user = User.objects.get(pk=user_id)
-    print(f"User: {user}")
-    print("Getting student")
-    student = Student.objects.get(user=user)
-    print(f"Student: {student}")
+    
+    user = get_object_or_404(get_user_model(), pk=user_id)
+    student = get_object_or_404(Student, user=user)
 
-    # Filter internships where student_id matches the logged-in user's student
-    internships = Internships.objects.filter(application__student=student).distinct()
-    # context = internships
-    internships_json = serialize('json', internships)
-    print(f"Internships Json: {internships_json}")
-    print(f"Internships: {internships}")
-    context = {'internships': internships}
-    internships_data = json.loads(internships_json)
-    print(f"Internships data: {internships_data}")
+    applications = Application.objects.filter(student=student).select_related('internship')
+    internships_data = []
 
-    context = {'internships': internships_data}
-    print(f"Context: {context}")
+    for application in applications:
+        internship = application.internship
+        internship_data = {
+            'id': internship.id,
+            'title': internship.title,
+            'location': internship.location,
+            'start_date': internship.start_date.strftime('%Y-%m-%d'),
+            'end_date': internship.end_date.strftime('%Y-%m-%d'),
+            'required_skills': internship.required_skills,
+            'qualifications': internship.qualifications,
+            'application_deadline': internship.application_deadline.strftime('%Y-%m-%d'),
+            'status': application.application_status,
+}
 
-    return JsonResponse(context)
-    # return render(request, 'your_template.html', context)
-    # else:
-    #     # Redirect to login page if not authenticated
-    #     return redirect('login')
+        internships_data.append(internship_data)
+
+    return JsonResponse({'internships': internships_data})

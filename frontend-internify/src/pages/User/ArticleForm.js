@@ -17,7 +17,7 @@ import { selectUserState } from "../../store/user/user-slice";
 const ArticleForm = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [topic, setTopic] = useState("");
+  const [tags, setTopic] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const user = useSelector(selectUserState);
@@ -27,7 +27,7 @@ const ArticleForm = () => {
     if (articleToEdit) {
       setTitle(articleToEdit.title);
       setContent(articleToEdit.content);
-      setTopic(articleToEdit.topic);
+      setTopic(articleToEdit.tags);
     }
   }, [articleToEdit]);
 
@@ -53,7 +53,7 @@ const ArticleForm = () => {
         {
           title: title,
           content: content,
-          topic: topic,
+          tags: tags,
           author: user.details.user_id,
         },
         {
@@ -132,7 +132,7 @@ const ArticleForm = () => {
           <TextField
             select
             variant="outlined"
-            value={topic}
+            value={tags}
             onChange={(e) => setTopic(e.target.value)}
             fullWidth
             sx={{ marginBottom: "1rem" }}
@@ -144,7 +144,7 @@ const ArticleForm = () => {
           <Button
             variant="contained"
             onClick={handlePostArticle}
-            disabled={!title || !content || !topic}
+            disabled={!title || !content || !tags}
             sx={{ width: "40%" }}
           >
             {articleToEdit ? "Update Article" : "Post Article"}

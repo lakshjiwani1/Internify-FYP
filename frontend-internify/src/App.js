@@ -22,6 +22,7 @@ import SubmitResume from "./pages/User/SubmitResume";
 import MyApplications from "./pages/User/Applications";
 import MyArticles from "./pages/User/MyArticles";
 import AdminPanel from "./pages/AdminPanel";
+import Applicants from "./pages/Employer/Applicants";
 
 const userRoutes = [
   {
@@ -98,6 +99,10 @@ const employerRoutes = [
   {
     path: "/internshipform/:id",
     element: <ProtectedRoute><InternshipForm /></ProtectedRoute>
+  },
+  {
+    path: "/applicants",
+    element: <ProtectedRoute><Applicants /></ProtectedRoute>
   }
 ];
 

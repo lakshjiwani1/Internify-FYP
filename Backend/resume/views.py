@@ -234,7 +234,7 @@ def save_resume(request):
             # Get or create fo object
             resume, created = ResumeInfo.objects.get_or_create(student=user)
             resume.skills = ', '.join(skills)
-            resume.education = ', '.join(education_fields)
+            resume.education = ''.join(education_fields)
             resume.summary = summary
             resume.save()
 

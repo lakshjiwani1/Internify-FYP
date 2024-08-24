@@ -25,7 +25,7 @@ const EmployerNavigationbar = () => {
   const authenticatedNavigationLinks = [
     { text: "Home", to: "/employer" },
     { text: "Post Internship", to: "/internshipform" },
-    { text: "Settings", to: "/settings" },
+    { text: "Applicants", to: "/applicants" },
   ];
 
   return (
