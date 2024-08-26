@@ -263,19 +263,21 @@ def reject_application(request, application_id):
     print(f"User ID: {user_id}")
     application = get_object_or_404(Application, id=application_id)
     internship = application.internship
+    # company_id = CompanyAuth(internship.company_id)
+    # print(f"company_id: {company_id}")
     print(f"Company ID from internship: {internship.company_id}")
     
-    if user_id == internship.company_id:
-        student_id = application.student_id
-        student = get_object_or_404(Student, id=student_id)
-        print(f"application: {application}")
-        print(f"student_id: {student_id}")
-        print(f"student: {student}")
-        
-        application.application_status = 'Rejected'
-        application.save()
+    # if user_id == internship.company_id:
+    student_id = application.student_id
+    student = get_object_or_404(Student, id=student_id)
+    print(f"application: {application}")
+    print(f"student_id: {student_id}")
+    print(f"student: {student}")
+    
+    application.application_status = 'Rejected'
+    application.save()
 
-        return JsonResponse({'success': True, 'message': "Application rejected successfully"})
-    else:
-        return JsonResponse({'success':False, 'message': 'This is not your company posted internship.'})
+    return JsonResponse({'success': True, 'message': "Application rejected successfully"})
+    # else:
+        # return JsonResponse({'success':False, 'message': 'This is not your company posted internship.'})
     
