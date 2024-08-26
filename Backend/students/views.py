@@ -208,6 +208,7 @@ def count_applicants(request, internships_id):
         resume_info = ResumeInfo.objects.filter(student=student.user_id).first()
         print(f"resume_info: {resume_info}")
         applicant_data = {
+            'application_id': application.id,
             'first_name': student.first_name,
             'last_name':student.last_name,
             'email': student.email,

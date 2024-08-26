@@ -218,7 +218,9 @@ def get_company(request):
         return JsonResponse({'companies': company_data})
     
 @csrf_exempt
+@api_view(['POST'])
 def accept_application(request, application_id):
+    print("Method is being called.") 
     company = request.user.companyauth
     application = get_object_or_404(Application, id=application_id)
     internship = application.internship
@@ -242,7 +244,9 @@ def accept_application(request, application_id):
         return JsonResponse({'success': False, 'message': f'Error sending email: {str(e)}'}, status=500)
 
 @csrf_exempt
-def reject_application(request, application_id):    
+@api_view(['POST'])
+def reject_application(request, application_id):  
+    print("Method is being called.")  
     auth_header = request.headers.get('Authorization')
     if not auth_header or not auth_header.startswith('Bearer '):
         return JsonResponse({'error': 'Authorization header missing or invalid'}, status=401)

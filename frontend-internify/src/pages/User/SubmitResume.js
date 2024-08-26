@@ -12,16 +12,16 @@ const SubmitResume = () => {
   const [name, setName] = useState('');
   const [skills, setSkills] = useState([]);
   const [newSkill, setNewSkill] = useState('');
-  const [education, setEducation] = useState('');
+  const [education_fields, setEducation] = useState('');
   const [resumeGenerated, setResumeGenerated] = useState(false); 
   const user = useSelector(selectUserState);
 
   useEffect(() => {
     if (location.state && location.state.resumeData) {
-      const { name, skills, education } = location.state.resumeData;
+      const { name, skills, education_fields } = location.state.resumeData;
       setName(name);
       setSkills(skills);
-      setEducation(education);
+      setEducation(education_fields);
     }
   }, [location.state]);
 
@@ -42,7 +42,7 @@ const SubmitResume = () => {
     const resumeData = {
       name,
       skills,
-      education,
+      education_fields,
     };
 
     try {
@@ -150,7 +150,7 @@ const SubmitResume = () => {
               <TextField
                 variant="outlined"
                 fullWidth
-                value={education}
+                value={education_fields}
                 onChange={(e) => setEducation(e.target.value)}
               />
             </Grid>
