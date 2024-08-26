@@ -376,8 +376,15 @@ def company_registration(request):
                 )
                 print(type(user.username))
                 print(type(user.password))
+                response_data = {
+                    'id': user.id,
+                    'username': user.username,
+                    'is_active': user.is_active,
+                    'user_type': user.user_type,
+                }
+                return JsonResponse({'response_data': response_data}, status=201, safe=False)
 
-                return JsonResponse({'success': True}, status=201)
+                # return JsonResponse({'success': True}, status=200)
         except ValidationError as e:
             raise JsonResponse('Value already exists')
     else:

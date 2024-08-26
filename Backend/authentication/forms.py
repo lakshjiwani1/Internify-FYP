@@ -82,7 +82,7 @@ class CompanyRegistrationForm(UserCreationForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.set_unusable_password()
+        # user.set_unusable_password()
         if commit:
             user.save()
         return user
