@@ -24,11 +24,18 @@ import {
   Box,
   CircularProgress,
   Container,
-  Select,
+  TextField,
+  InputAdornment,
   FormControl,
-  InputLabel,
+  Select,
 } from "@mui/material";
-import { AddCircleOutline, MoreVert, Edit, Delete } from "@mui/icons-material";
+import {
+  AddCircleOutline,
+  MoreVert,
+  Edit,
+  Delete,
+  Search,
+} from "@mui/icons-material";
 import { useTheme } from "@mui/system";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -41,15 +48,18 @@ const EmployerDashboard = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedInternship, setSelectedInternship] = useState(null);
   const [internships, setInternships] = useState([]);
+  const [filteredInternships, setFilteredInternships] = useState([]); // To handle search results
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [applicantsDialogOpen, setApplicantsDialogOpen] = useState(false);
   const [applicants, setApplicants] = useState([]);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [viewApplicantDialogOpen, setViewApplicantDialogOpen] = useState(false);
+  const [editingApplicantId, setEditingApplicantId] = useState(null);
   const open = Boolean(anchorEl);
   const user = useSelector(selectUserState);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleClick = (event, internship) => {
     setAnchorEl(event.currentTarget);
@@ -107,49 +117,6 @@ const EmployerDashboard = () => {
     }
   };
 
-  const handleAcceptApplication = async (application_id) => {
-    try {
-      await axios.post(
-        `http://127.0.0.1:8000/accept_application/${application_id}/`,
-        {},
-        {
-          headers: {
-            "X-CSRFToken": user.token,
-            Authorization: `Bearer ${user.token}`,
-          },
-        }
-      );
-      setSnackbarMessage("Applicant Accepted Successfully");
-      setSnackbarOpen(true);
-    } catch (error) {
-      console.error("Error accepting applicant:", error);
-      setSnackbarMessage("Failed to Accept Applicant");
-      console.log(application_id);
-      setSnackbarOpen(true);
-    }
-  };
-
-  const handleRejectApplication = async (application_id) => {
-    try {
-      await axios.post(
-        `http://127.0.0.1:8000/reject_application/${application_id}/`,
-        {},
-        {
-          headers: {
-            "X-CSRFToken": user.token,
-            Authorization: `Bearer ${user.token}`,
-          },
-        }
-      );
-      setSnackbarMessage("Applicant Rejected Successfully");
-      setSnackbarOpen(true);
-    } catch (error) {
-      console.error("Error rejecting applicant:", error);
-      setSnackbarMessage("Failed to Reject Applicant");
-      setSnackbarOpen(open);
-    }
-  };
-
   const handleViewApplicant = (applicant) => {
     setSelectedApplicant(applicant);
     setViewApplicantDialogOpen(true);
@@ -163,18 +130,53 @@ const EmployerDashboard = () => {
     setViewApplicantDialogOpen(false);
   };
 
-  const handleStatusChange = async (event, application) => {
-    const application_status = event.target.value;
+  const handleEditStatus = (applicantId) => {
+    setEditingApplicantId(applicantId);
+  };
+
+  const handleStatusChange = async (applicantId, newStatus) => {
     try {
-      if (application_status === "Accepted") {
-        await handleAcceptApplication(application.application_id);
-      } else if (application_status === "Rejected") {
-        await handleRejectApplication(application.application_id);
-      }
+      const url =
+        newStatus === "Accepted"
+          ? `http://127.0.0.1:8000/accept_application/${applicantId}/`
+          : `http://127.0.0.1:8000/reject_application/${applicantId}/`;
+
+      await axios.post(
+        url,
+        {},
+        {
+          headers: {
+            "X-CSRFToken": user.token,
+            Authorization: `Bearer ${user.token}`,
+          },
+        }
+      );
+
+      setApplicants((prevApplicants) =>
+        prevApplicants.map((applicant) =>
+          applicant.application_id === applicantId
+            ? { ...applicant, application_status: newStatus }
+            : applicant
+        )
+      );
+
+    setSnackbarMessage(
+      newStatus === "Accepted"
+        ? "Applicant Accepted Successfully!"
+        : "Applicant Rejected Successfully!"
+    );
+    setSnackbarOpen(true);  
+
+      setEditingApplicantId(null);
     } catch (error) {
-      console.error("Error updating applicant status:", error);
+      console.error("Error updating status:", error);
     }
-    console.log(application_status);
+  };
+
+  const getInternshipStatus = (deadline) => {
+    const currentDateTime = new Date();
+    const deadlineDateTime = new Date(deadline);
+    return deadlineDateTime > currentDateTime ? "Open" : "Closed";
   };
 
   useEffect(() => {
@@ -196,6 +198,7 @@ const EmployerDashboard = () => {
             ...item.fields,
           }));
           setInternships(internshipsData);
+          setFilteredInternships(internshipsData); 
         } else {
           console.error("Invalid data format:", data);
         }
@@ -208,6 +211,13 @@ const EmployerDashboard = () => {
 
     fetchData();
   }, [user.token]);
+
+  const handleSearch = () => {
+    const filtered = internships.filter((internship) =>
+      internship.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredInternships(filtered);
+  };
 
   if (loading) {
     return (
@@ -230,30 +240,68 @@ const EmployerDashboard = () => {
       <Grid
         item
         xs={12}
-        sx={{ marginTop: "3rem", marginBottom: "2rem", textAlign: "center" }}
+        sx={{ marginTop: "4rem", marginBottom: "4rem", textAlign: "center" }}
       >
         <Typography variant="h4">Employer Dashboard</Typography>
       </Grid>
-      <Grid item xs={12} sx={{ textAlign: "left", marginBottom: "2rem" }}>
-        <Link to="/internshipform" style={{ textDecoration: "none" }}>
-          <Button
-            startIcon={<AddCircleOutline />}
-            variant="contained"
-            sx={{
-              backgroundColor: theme.palette.primary.main,
-              color: "white",
-              textTransform: "none",
-            }}
-          >
-            Post Internship
-          </Button>
-        </Link>
-      </Grid>
-      <Grid item xs={12} sx={{ textAlign: "center", marginBottom: "1rem" }}>
-        <Typography variant="h5">Internships Posted</Typography>
+      <Grid item xs={12} sx={{ textAlign: "left", marginBottom: "0.5rem" }}>
+        <Grid
+          container
+          spacing={2}
+          justifyContent="space-between"
+          alignItems="center"
+        >
+          <Grid item xs={9}>
+            <Grid container alignItems="center">
+              <Grid item xs>
+                <TextField
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  variant="outlined"
+                  size="small"
+                  placeholder="Search internships"
+                  sx={{ width: "100%" }}
+                />
+              </Grid>
+              <Grid item>
+                <IconButton
+                  onClick={handleSearch}
+                  sx={{
+                    width: "40px",
+                    height: "40px",
+                    backgroundColor: theme.palette.primary.main,
+                    color: "white",
+                    borderRadius: "4px",
+                    marginLeft: "8px",
+                    "&:hover": {
+                      backgroundColor: theme.palette.primary.dark,
+                    },
+                  }}
+                >
+                  <Search />
+                </IconButton>
+              </Grid>
+            </Grid>
+          </Grid>
+          <Grid item xs={3} sx={{ textAlign: "right" }}>
+            <Link to="/internshipform" style={{ textDecoration: "none" }}>
+              <Button
+                startIcon={<AddCircleOutline />}
+                variant="contained"
+                sx={{
+                  backgroundColor: theme.palette.primary.main,
+                  color: "white",
+                  textTransform: "none",
+                }}
+              >
+                Post Internship
+              </Button>
+            </Link>
+          </Grid>
+        </Grid>
       </Grid>
       <Grid item xs={12}>
-        {internships.length > 0 ? (
+        {filteredInternships.length > 0 ? (
           <TableContainer
             component={Paper}
             sx={{ marginBottom: "1rem", borderBottom: "2px solid #ccc" }}
@@ -265,12 +313,12 @@ const EmployerDashboard = () => {
                   <TableCell>Start Date</TableCell>
                   <TableCell>Applicants</TableCell>
                   <TableCell>Location</TableCell>
-                  <TableCell>Application Deadline</TableCell>
+                  <TableCell>Internship Status</TableCell>
                   <TableCell>Action</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {internships.map((internship) => (
+                {filteredInternships.map((internship) => (
                   <TableRow key={internship.id}>
                     <TableCell>{internship.title}</TableCell>
                     <TableCell>{internship.start_date}</TableCell>
@@ -283,7 +331,30 @@ const EmployerDashboard = () => {
                       </Button>
                     </TableCell>
                     <TableCell>{internship.location}</TableCell>
-                    <TableCell>{internship.application_deadline}</TableCell>
+                    <TableCell>
+                      <Box
+                        sx={{
+                          padding: "4px 2px",
+                          borderRadius: "4px",
+                          backgroundColor:
+                            getInternshipStatus(
+                              internship.application_deadline
+                            ) === "Open"
+                              ? "rgba(0, 128, 0, 0.3)"
+                              : "rgba(255, 0, 0, 0.3)",
+                          color:
+                            getInternshipStatus(
+                              internship.application_deadline
+                            ) === "Open"
+                              ? "green"
+                              : "red",
+                          textAlign: "center",
+                          width: "80px",
+                        }}
+                      >
+                        {getInternshipStatus(internship.application_deadline)}
+                      </Box>
+                    </TableCell>
                     <TableCell>
                       <IconButton
                         size="small"
@@ -322,7 +393,6 @@ const EmployerDashboard = () => {
         )}
       </Grid>
 
-      {/* Dialog for viewing applicants */}
       <Dialog
         open={applicantsDialogOpen}
         onClose={closeApplicantsDialog}
@@ -339,8 +409,9 @@ const EmployerDashboard = () => {
                     <TableCell>S#</TableCell>
                     <TableCell>Name</TableCell>
                     <TableCell>Email</TableCell>
-                    <TableCell>Status</TableCell>
                     <TableCell>Applicant Details</TableCell>
+                    <TableCell>Status</TableCell>
+                    <TableCell>Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -352,27 +423,67 @@ const EmployerDashboard = () => {
                       </TableCell>
                       <TableCell>{applicant.email}</TableCell>
                       <TableCell>
-                        <FormControl fullWidth variant="standard">
-                          <InputLabel>Status</InputLabel>
-                          <Select
-                            value={applicant.status || "Pending"} 
-                            onChange={(event) =>
-                              handleStatusChange(event, applicant)
-                            }
-                          >
-                            <MenuItem value="Pending">Pending</MenuItem>
-                            <MenuItem value="Accepted">Accepted</MenuItem>
-                            <MenuItem value="Rejected">Rejected</MenuItem>
-                          </Select>
-                        </FormControl>
-                      </TableCell>
-                      <TableCell>
                         <Button
                           variant="text"
                           onClick={() => handleViewApplicant(applicant)}
                         >
                           View Details
                         </Button>
+                      </TableCell>
+                      <TableCell>
+                        {editingApplicantId === applicant.application_id ? (
+                          <FormControl fullWidth>
+                            <Select
+                              value={applicant.application_status}
+                              onChange={(e) =>
+                                handleStatusChange(
+                                  applicant.application_id,
+                                  e.target.value
+                                )
+                              }
+                            >
+                              <MenuItem value="Accepted">Accepted</MenuItem>
+                              <MenuItem value="Rejected">Rejected</MenuItem>
+                            </Select>
+                          </FormControl>
+                        ) : (
+                          <Box
+                            sx={{
+                              padding: "4px 4px",
+                              borderRadius: "4px",
+                              backgroundColor:
+                                applicant.application_status === "Accepted"
+                                  ? "rgba(0, 128, 0, 0.3)"
+                                  : applicant.application_status === "Rejected"
+                                    ? "rgba(255, 0, 0, 0.3)"
+                                    : "rgba(255, 255, 0, 0.3)",
+                              color:
+                                applicant.application_status === "Accepted"
+                                  ? "green"
+                                  : applicant.application_status === "Rejected"
+                                    ? "red"
+                                    : "gray",
+                              textAlign: "center",
+                              display: "inline-block",
+                              marginRight: "8px",
+                            }}
+                          >
+                            {applicant.application_status}
+                          </Box>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {editingApplicantId ===
+                        applicant.application_id ? null : (
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              handleEditStatus(applicant.application_id)
+                            }
+                          >
+                            <Edit fontSize="small" />
+                          </IconButton>
+                        )}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -401,7 +512,8 @@ const EmployerDashboard = () => {
           {selectedApplicant ? (
             <Box>
               <Typography variant="body1">
-                <strong>Name:</strong> {selectedApplicant.first_name} {selectedApplicant.last_name}
+                <strong>Name:</strong> {selectedApplicant.first_name}{" "}
+                {selectedApplicant.last_name}
               </Typography>
               <Typography variant="body1">
                 <strong>Email:</strong> {selectedApplicant.email}

@@ -209,6 +209,7 @@ def count_applicants(request, internships_id):
         print(f"resume_info: {resume_info}")
         applicant_data = {
             'application_id': application.id,
+            'application_status': application.application_status,
             'first_name': student.first_name,
             'last_name':student.last_name,
             'email': student.email,
