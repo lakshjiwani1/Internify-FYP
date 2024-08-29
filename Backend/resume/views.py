@@ -27,6 +27,10 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 import io
 from django.http import HttpResponse
+import re
+import docx2txt
+import fitz
+
 
 
 
@@ -38,6 +42,7 @@ def extract_text_from_pdf(file_path):
             # page = reader.pages[page_num]
             text += page.extract_text()
     return text 
+    
 
 # @csrf_exempt
 def extract_text_from_docx(file_path):
@@ -74,6 +79,31 @@ def extract_text_from_docx(file_path):
         return text
 
 
+def preprocess_text(text):
+    # Convert text to lowercase
+    # text = text.lower()
+    
+    # Remove punctuation
+    text = re.sub(r'[^\w\s]', '', text)
+    
+    # Remove numbers
+    text = re.sub(r'\d+', '', text)
+    
+    # Remove extra whitespace
+    # text = ' '.join(text.split())
+    
+    # Optionally, remove stopwords (you can uncomment the following code if needed)
+    # from spacy.lang.en.stop_words import STOP_WORDS
+    # text = ' '.join([word for word in text.split() if word not in STOP_WORDS])
+
+    return text
+def extract_text_from_docx(file_path):
+    return docx2txt.process(file_path)
+
+def extract_text_from_txt(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        return f.read()
+    
 @csrf_exempt
 def extract_data_from_resume(request):
     if request.method == 'POST':
@@ -87,12 +117,26 @@ def extract_data_from_resume(request):
             print(f"Full File Path: {full_file_path}")
             file_extension = file.name.split('.')[-1].lower()
 
+            text = ""
             if file_extension == 'pdf':
-                text = extract_text_from_pdf(full_file_path)
+                file.seek(0)
+                # Use PyMuPDF to extract text from PDF
+                with fitz.open(stream=file.read(), filetype="pdf") as doc:
+                    for page in doc:
+                        text += page.get_text()
                 print(f"Resume Text: \n{text}")
-            # elif file_extension == 'docx':
-            #     text = extract_text_from_docx(full_file_path)
-                # print(f"Resume Text from docx: {text}")
+
+            elif file_extension == 'docx':
+                text = extract_text_from_docx(full_file_path)
+            elif file_extension == 'txt':
+                text = extract_text_from_txt(full_file_path)
+            else:
+                return JsonResponse({'error': 'Unsupported file format'}, status=400)
+            
+            # Pre-Process the data
+            # text = preprocess_text(text)
+            # print(f"Processed Resume Text: \n{text}")
+            
             model_path = os.path.join(settings.BASE_DIR, 'F:\FYP\Git\Internify-FYP\Internify\Backend\output', 'model-best')            
             # model_path = os.path.join(settings.BASE_DIR, "D:\laksh\Semesters\FYP\FYP-2\Internify\Backend\output", 'model-best')            
             print(f"Model Path: {model_path}")
@@ -276,7 +320,7 @@ def remove_asterisks(content):
 
 def save_resume_as_pdf(content, user_info=None):
     if user_info is None:
-        user_info = {'name': 'John Doe', 'email': 'john.doe@example.com'}  # Default user info
+        return JsonResponse({'error': 'No information provided'}, status=401)  # Default user info
     content = remove_asterisks(content)
 
     buffer = io.BytesIO()  # Create an in-memory buffer
@@ -285,7 +329,7 @@ def save_resume_as_pdf(content, user_info=None):
 
     y_position = height - 72
 
-    def draw_text(text, y_pos, max_width, font_size=12, font="Times-Roman", left_margin=56.7, right_margin=56.7, bold=False, align=None):
+    def draw_text(text, y_pos, max_width, font_size=14, font="Times-Roman", left_margin=56.7, right_margin=56.7, bold=False, align=None):
         style = getSampleStyleSheet()['Normal']
         style.fontName = font
         style.fontSize = font_size
@@ -300,16 +344,16 @@ def save_resume_as_pdf(content, user_info=None):
 
     lines = content.split('\n')
 
-    c.setFont("Times-Bold", 16)
+    c.setFont("Times-Bold", 20)
     c.drawCentredString(width / 2, y_position, user_info['name'])
     y_position -= 20
 
-    c.setFont("Times-Roman", 12)
+    c.setFont("Times-Roman", 16)
     c.drawString(72, y_position, f"Email: {user_info['email']}")
     y_position -= 18
 
     for line in lines:
-        if line.strip() in ["Professional Summary", "Education", "Skills", "Certifications and Awards"]:
+        if line.strip() in ["Professional Summary", "Education", "Skills"]:
             y_position = draw_text(line.strip(), y_position, width - 72, font_size=14, bold=True)
         else:
             y_position = draw_text(line.strip(), y_position, width - 72)
@@ -341,8 +385,6 @@ def generate_resume(request):
         "Professional Summary": "Professional Summary",
         "Education": "Education",
         "Skills": "Skills",
-        "Certifications & Awards": "Certifications & Awards",
-        "Additional Experience": "Additional Information"
         }
         # user = request.user.id
         # user_id = 59
@@ -364,7 +406,7 @@ def generate_resume(request):
         print(f"Resume Skills: {resume.skills}")
 
         user_info = {
-            "name": student.first_name + student.last_name,
+            "name": student.first_name.title() + " " + student.last_name.title(),
             "last_name": student.last_name,
             "email": student.email,
             "skills": resume.skills,
@@ -372,22 +414,24 @@ def generate_resume(request):
         }
 
         prompt = f"""
-        You are a professional resume writer. Your task is to create an ATS-friendly resume based on the following user details:
+        You are a professional resume writer. Your task is to create an ATS-friendly resume based on the user details provided below.
 
-        Name: {user_info['name']}
-        Email: {user_info['email']}
-        Education: {user_info['education']}
-        Skills: {', '.join(user_info['skills'])}
+        User Details:
+        - Name: {user_info['name']}
+        - Email: {user_info['email']}
+        - Education: {user_info['education']}
+        - Skills: {', '.join(user_info['skills'])}
 
-        Please ensure the resume is formatted in a clean and professional manner, suitable for Applicant Tracking Systems (ATS). The resume should include the following sections:
+        Please create a clean, professional, and ATS-compliant resume that includes the following sections:
 
         1. Contact Information
         2. Professional Summary
         3. Education
-        4. Skills
-        6. Certifications and Awards (if available)
+        4. Skills: {' '.join(user_info['skills'])} (List these skills exactly as provided, with no additions or alterations)
+        5. Certifications and Awards (if available)
 
-        Use the details provided to craft a compelling and concise resume. Make sure to use bullet points for easy readability in the skills and work experience sections. Highlight the most relevant skills and education qualifications that match typical job descriptions in the user's field. Ensure the formatting is simple and avoids graphics or complex layouts that might not be parsed correctly by ATS software. Also dont add your own information in the response.
+        It is critical that the skills section strictly includes only the skills listed by the user. Ensure that each skill is presented in a single line within the resume. Use bullet points for easy readability in the skills section, and ensure the resume is formatted simply, avoiding any graphics or complex layouts that may not be parsed correctly by ATS software. The resume should accurately reflect the user's details and contain no extra information.
+
         """
         result = llm.invoke(prompt)
         print(result)
