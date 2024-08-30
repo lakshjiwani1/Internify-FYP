@@ -2,7 +2,15 @@ import React, { useState } from "react";
 import { useFormik } from "formik";
 import { useDispatch } from "react-redux";
 import { userActions } from "../../store/user/user-slice";
-import { Box, Button, Grid, Typography, useMediaQuery, Backdrop, CircularProgress } from "@mui/material";
+import {
+  Box,
+  Button,
+  Grid,
+  Typography,
+  useMediaQuery,
+  Backdrop,
+  CircularProgress,
+} from "@mui/material";
 import img from "../../assets/login img.jpeg";
 import { Link, useNavigate } from "react-router-dom";
 import { StyledField, Flexbox } from "../../misc/MUIComponent";
@@ -29,11 +37,15 @@ const LoginForm = () => {
         console.log("Form Submitted", values);
 
         // Perform Login
-        const loginResponse = await axios.post("http://127.0.0.1:8000/signin/", values, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+        const loginResponse = await axios.post(
+          "http://127.0.0.1:8000/signin/",
+          values,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         console.log("login Response:", loginResponse);
 
@@ -46,8 +58,13 @@ const LoginForm = () => {
           localStorage.setItem("refresh_token", tokens.refresh);
 
           // Dispatch login action
-          dispatch(userActions.login({ token: tokens.access, details: user_details }));
-          console.log("value:", { token: tokens.access, details: user_details });
+          dispatch(
+            userActions.login({ token: tokens.access, details: user_details })
+          );
+          console.log("value:", {
+            token: tokens.access,
+            details: user_details,
+          });
 
           // Navigate based on user type
           const userType = user_details?.user_type;
@@ -72,21 +89,52 @@ const LoginForm = () => {
   const isMobile = useMediaQuery("(max-width:600px)");
 
   return (
-    <Flexbox sx={{ flexDirection: "column", minHeight: "100vh", padding: "2rem", marginBottom: 10, position: "relative" }}>
-      <Typography variant="h4" sx={{ marginTop: "2rem", marginBottom: "4rem", textAlign: "center" }}>
+    <Flexbox
+      sx={{
+        flexDirection: "column",
+        minHeight: "100vh",
+        padding: "2rem",
+        marginBottom: 10,
+        position: "relative",
+      }}
+    >
+      <Typography
+        variant="h4"
+        sx={{ marginTop: "2rem", marginBottom: "3rem", textAlign: "center" }}
+      >
         Sign In to the world of Internships!
       </Typography>
       <Grid container spacing={2}>
         {!isMobile && (
           <Grid item xs={12} md={6} sx={{ marginTop: { xs: "2rem", md: 0 } }}>
-            <img src={img} alt="Left Side Image" style={{ marginRight: -80, width: "100%", borderRadius: "8px" }} />
+            <img
+              src={img}
+              alt="Left Side Image"
+              style={{
+                marginRight: -80,
+                width: "100%",
+                borderRadius: "8px",
+                marginTop: 0,
+              }}
+            />
           </Grid>
         )}
         <Grid item xs={12} md={6}>
-          <Box sx={{ marginLeft: 12, marginTop: 10, marginRight: isMobile ? 0 : "2rem" }}>
-            <Typography variant="body1" sx={{ width: isMobile ? "100%" : "20rem", marginBottom: "1rem" }}>
+          <Box
+            sx={{
+              marginLeft: 12,
+              marginTop: 10,
+              marginRight: isMobile ? 0 : "2rem",
+            }}
+          >
+            <Typography
+              variant="body1"
+              sx={{ width: isMobile ? "100%" : "20rem", marginBottom: "1rem" }}
+            >
               If you don't have an account registered You can{" "}
-              <Link to="/signup" sx={{ color: "#F53855" }}>Signup here.</Link>
+              <Link to="/signup" sx={{ color: "#F53855" }}>
+                Signup here.
+              </Link>
             </Typography>
           </Box>
           <form onSubmit={formik.handleSubmit} style={{ marginLeft: 100 }}>
@@ -99,7 +147,9 @@ const LoginForm = () => {
                   label="Username"
                   value={formik.values.username}
                   onChange={formik.handleChange}
-                  error={formik.touched.username && Boolean(formik.errors.username)}
+                  error={
+                    formik.touched.username && Boolean(formik.errors.username)
+                  }
                   helperText={formik.touched.username && formik.errors.username}
                 />
               </Grid>
@@ -112,13 +162,17 @@ const LoginForm = () => {
                   type="password"
                   value={formik.values.password}
                   onChange={formik.handleChange}
-                  error={formik.touched.password && Boolean(formik.errors.password)}
+                  error={
+                    formik.touched.password && Boolean(formik.errors.password)
+                  }
                   helperText={formik.touched.password && formik.errors.password}
                 />
               </Grid>
               <Grid item xs={12}>
                 <Typography variant="body1" sx={{ marginTop: 1 }}>
-                  <Link to="/signup" sx={{ color: "#F53855" }}>Forgot Password?</Link>
+                  <Link to="/signup" sx={{ color: "#F53855" }}>
+                    Forgot Password?
+                  </Link>
                 </Typography>
               </Grid>
               <Grid item xs={12}>
@@ -143,7 +197,10 @@ const LoginForm = () => {
         </Grid>
       </Grid>
 
-      <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={loading}>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+      >
         <CircularProgress color="inherit" />
       </Backdrop>
     </Flexbox>

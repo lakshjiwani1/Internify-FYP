@@ -4,12 +4,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { selectUserState } from '../../store/user/user-slice';
-import resumeImage from '../../assets/resume.png'; 
+import resumeImage from '../../assets/resume2.png'; 
 
 const SubmitResume = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [name, setName] = useState('');
   const [skills, setSkills] = useState([]);
   const [newSkill, setNewSkill] = useState('');
   const [education_fields, setEducation] = useState('');
@@ -18,8 +17,7 @@ const SubmitResume = () => {
 
   useEffect(() => {
     if (location.state && location.state.resumeData) {
-      const { name, skills, education_fields } = location.state.resumeData;
-      setName(name);
+      const { skills, education_fields } = location.state.resumeData;
       setSkills(skills);
       setEducation(education_fields);
     }
@@ -40,7 +38,6 @@ const SubmitResume = () => {
     const jwtToken = user.token;
 
     const resumeData = {
-      name,
       skills,
       education_fields,
     };
@@ -102,17 +99,6 @@ const SubmitResume = () => {
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <Typography variant="subtitle1" sx={{ marginBottom: '0.5rem' }}>
-                Name
-              </Typography>
-              <TextField
-                variant="outlined"
-                fullWidth
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" sx={{ marginBottom: '0.5rem' }}>
                 Skills
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -170,7 +156,7 @@ const SubmitResume = () => {
           <img
             src={resumeImage}
             alt="Resume Preview"
-            style={{ width: '80%', height: 'auto', marginBottom: '1rem', marginTop: '-1rem' }} 
+            style={{ width: '60%', height: 'auto', marginBottom: '1rem', marginTop: '1rem' }} 
           />
           <Typography variant="h6">
             {resumeGenerated
