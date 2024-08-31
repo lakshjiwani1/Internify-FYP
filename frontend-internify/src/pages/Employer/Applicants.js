@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Grid,
   Paper,
@@ -13,48 +13,117 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  Container,
+  Box,
 } from "@mui/material";
 import { useTheme } from "@mui/system";
+import axios from "axios";
+import { useSelector } from "react-redux";
+import { selectUserState } from "../../store/user/user-slice";
 
 const Applicants = () => {
   const theme = useTheme();
+  const [applicants, setApplicants] = useState([]);
   const [selectedApplicant, setSelectedApplicant] = useState(null);
   const [applicantDialogOpen, setApplicantDialogOpen] = useState(false);
+  const user = useSelector(selectUserState);
 
-  // Dummy Data for Applicants
-  const applicants = [
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john.doe@example.com",
-      internships: [
-        { id: 1, title: "Software Engineer Intern", status: "Accepted" },
-        { id: 2, title: "Frontend Developer Intern", status: "Pending" },
-      ],
-    },
-    {
-      id: 2,
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      internships: [
-        { id: 3, title: "Data Scientist Intern", status: "Rejected" },
-        { id: 4, title: "Backend Developer Intern", status: "Pending" },
-      ],
-    },
-    {
-      id: 3,
-      name: "Alice Johnson",
-      email: "alice.johnson@example.com",
-      internships: [
-        { id: 5, title: "Product Manager Intern", status: "Accepted" },
-      ],
-    },
-  ];
+  useEffect(() => {
+    const fetchApplicants = async () => {
+      try {
+        const response = await axios.get(
+          "http://127.0.0.1:8000/internship_list/",
+          {
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-  const handleViewApplicant = (applicant) => {
-    setSelectedApplicant(applicant);
-    setApplicantDialogOpen(true);
+        const internships = response.data.internships;
+        let allApplicants = [];
+
+        for (const internship of internships) {
+          const applicantResponse = await axios.get(
+            `http://127.0.0.1:8000/count_applicants/${internship.pk}/`,
+            {
+              headers: {
+                Authorization: `Bearer ${user.token}`,
+              },
+            }
+          );
+
+          const internshipData = applicantResponse.data;
+          const applicantsData = internshipData.applicants.map((applicant) => ({
+            ...applicant,
+            internshipTitle: internshipData.title,
+            internshipId: internshipData.id,
+          }));
+
+          allApplicants = [...allApplicants, ...applicantsData];
+        }
+
+        const uniqueApplicants = Array.from(
+          new Map(
+            allApplicants.map((applicant) => [applicant.email, applicant])
+          ).values()
+        );
+
+        setApplicants(uniqueApplicants);
+      } catch (error) {
+        console.error("Error fetching applicants:", error);
+      }
+    };
+
+    fetchApplicants();
+  }, [user.token]);
+
+  const handleViewApplicant = async (applicant) => {
+    try {
+      const response = await axios.get(
+        "http://127.0.0.1:8000/internship_list/",
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const internships = response.data.internships;
+      const internshipsForApplicant = [];
+
+      for (const internship of internships) {
+        const applicantResponse = await axios.get(
+          `http://127.0.0.1:8000/count_applicants/${internship.pk}/`,
+          {
+            headers: {
+              Authorization: `Bearer ${user.token}`,
+            },
+          }
+        );
+
+        const internshipData = applicantResponse.data;
+        const applicantInInternship = internshipData.applicants.find(
+          (app) => app.email === applicant.email
+        );
+
+        if (applicantInInternship) {
+          internshipsForApplicant.push({
+            internshipTitle: internshipData.title,
+            applicationStatus: applicantInInternship.application_status,
+          });
+        }
+      }
+
+      setSelectedApplicant({
+        ...applicant,
+        internships: internshipsForApplicant,
+      });
+      setApplicantDialogOpen(true);
+    } catch (error) {
+      console.error("Error fetching internships for applicant:", error);
+    }
   };
 
   const closeApplicantDialog = () => {
@@ -90,8 +159,8 @@ const Applicants = () => {
             </TableHead>
             <TableBody>
               {applicants.map((applicant) => (
-                <TableRow key={applicant.id}>
-                  <TableCell>{applicant.name}</TableCell>
+                <TableRow key={applicant.email}>
+                  <TableCell>{`${applicant.first_name} ${applicant.last_name}`}</TableCell>
                   <TableCell>{applicant.email}</TableCell>
                   <TableCell>
                     <Button
@@ -102,7 +171,7 @@ const Applicants = () => {
                       }}
                       onClick={() => handleViewApplicant(applicant)}
                     >
-                      View Applicant
+                      View Applications
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -121,7 +190,7 @@ const Applicants = () => {
           fullWidth
           maxWidth="sm"
         >
-          <DialogTitle>{selectedApplicant.name}</DialogTitle>
+          <DialogTitle>{`${selectedApplicant.first_name} ${selectedApplicant.last_name}`}</DialogTitle>
           <DialogContent>
             <Table>
               <TableHead>
@@ -131,10 +200,33 @@ const Applicants = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {selectedApplicant.internships.map((internship) => (
-                  <TableRow key={internship.id}>
-                    <TableCell>{internship.title}</TableCell>
-                    <TableCell>{internship.status}</TableCell>
+                {selectedApplicant.internships.map((internship, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{internship.internshipTitle}</TableCell>
+                    <TableCell>
+                      <Box
+                        sx={{
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                          backgroundColor:
+                            internship.applicationStatus === "Accepted"
+                              ? "rgba(0, 128, 0, 0.2)" 
+                              : internship.applicationStatus === "Rejected"
+                              ? "rgba(255, 0, 0, 0.2)" 
+                              : "rgba(255, 255, 0, 0.2)", 
+                          color:
+                            internship.applicationStatus === "Accepted"
+                              ? "green"
+                              : internship.applicationStatus === "Rejected"
+                              ? "red"
+                              : "gray",
+                          textAlign: "center",
+                          display: "inline-block",
+                        }}
+                      >
+                        {internship.applicationStatus}
+                      </Box>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

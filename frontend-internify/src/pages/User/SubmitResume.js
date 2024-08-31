@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Typography, TextField, Button, Grid, Chip } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box, Typography, TextField, Button, Grid, Chip, Backdrop, CircularProgress } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
@@ -12,7 +12,8 @@ const SubmitResume = () => {
   const [skills, setSkills] = useState([]);
   const [newSkill, setNewSkill] = useState('');
   const [education_fields, setEducation] = useState('');
-  const [resumeGenerated, setResumeGenerated] = useState(false); 
+  const [resumeGenerated, setResumeGenerated] = useState(false);
+  const [loading, setLoading] = useState(false);  
   const user = useSelector(selectUserState);
 
   useEffect(() => {
@@ -36,13 +37,10 @@ const SubmitResume = () => {
 
   const handleGenerateResume = async () => {
     const jwtToken = user.token;
-
-    const resumeData = {
-      skills,
-      education_fields,
-    };
+    const resumeData = { skills, education_fields };
 
     try {
+      setLoading(true);  
       const response = await axios.post('http://127.0.0.1:8000/resume/save_resume', resumeData, {
         headers: {
           'Authorization': `Bearer ${jwtToken}`,
@@ -52,12 +50,14 @@ const SubmitResume = () => {
 
       if (response.status === 200 || response.status === 201) {
         console.log('Resume details saved successfully');
-        setResumeGenerated(true); 
+        setResumeGenerated(true);
       } else {
         console.error('Error saving resume details:', response.data.message);
       }
     } catch (error) {
       console.error('Error saving resume details:', error.response ? error.response.data : error.message);
+    } finally {
+      setLoading(false); 
     }
   };
 
@@ -65,6 +65,7 @@ const SubmitResume = () => {
     const jwtToken = user.token;
 
     try {
+      setLoading(true); 
       const response = await axios.get('http://127.0.0.1:8000/resume/generate_resume', {
         headers: {
           'Authorization': `Bearer ${jwtToken}`,
@@ -86,6 +87,8 @@ const SubmitResume = () => {
       }
     } catch (error) {
       console.error('Error generating resume:', error.response ? error.response.data : error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -176,6 +179,13 @@ const SubmitResume = () => {
           )}
         </Grid>
       </Grid>
+
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Box>
   );
 };

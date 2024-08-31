@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
-import { Box, Button, Typography, Snackbar, Alert } from '@mui/material';
+import {
+  Box,
+  Button,
+  Typography,
+  Snackbar,
+  Alert,
+  Backdrop,
+  CircularProgress,
+} from '@mui/material';
 import { Flexbox } from '../../misc/MUIComponent';
 import { useNavigate } from 'react-router-dom';
 import resumeImage from '../../assets/resume.png';
@@ -11,6 +19,7 @@ const Resume = () => {
   const [file, setFile] = useState(null);
   const [alertOpen, setAlertOpen] = useState(false);
   const [fileAlertOpen, setFileAlertOpen] = useState(false);
+  const [loading, setLoading] = useState(false); 
   const navigate = useNavigate();
   const user = useSelector(selectUserState);
 
@@ -38,30 +47,37 @@ const Resume = () => {
       return;
     }
 
-    const jwtToken = user.token; // Use JWT token for authorization
+    setLoading(true);  
 
+    const jwtToken = user.token;
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/resume/extract_data_from_resume', formData, {
-        headers: {
-          'Authorization': `Bearer ${jwtToken}`, 
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await axios.post(
+        'http://127.0.0.1:8000/resume/extract_data_from_resume',
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${jwtToken}`,
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      );
 
       console.log('Response data: ', response.data);
 
-      if (response.data) {
-        navigate('/submittedresume', { state: { resumeData: response.data } });
-      } else if (response.data && response.data.message) {
-        console.error('Error analyzing resume:', response.data.message);
-      } else {
-        console.error('Unexpected response from backend:', response.data);
-      }
+        setLoading(false); 
+        if (response.data) {
+          navigate('/submittedresume', { state: { resumeData: response.data } });
+        } else if (response.data && response.data.message) {
+          console.error('Error analyzing resume:', response.data.message);
+        } else {
+          console.error('Unexpected response from backend:', response.data);
+        };
     } catch (error) {
       console.error('Error submitting resume:', error.response ? error.response.data : error.message);
+      setLoading(false);
     }
   };
 
@@ -127,6 +143,14 @@ const Resume = () => {
           />
         </Box>
       </Flexbox>
+      
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
+
       <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleAlertClose}>
         <Alert onClose={handleAlertClose} severity="error">
           Only PDF files are accepted.
