@@ -48,7 +48,7 @@ const EmployerDashboard = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedInternship, setSelectedInternship] = useState(null);
   const [internships, setInternships] = useState([]);
-  const [filteredInternships, setFilteredInternships] = useState([]); // To handle search results
+  const [filteredInternships, setFilteredInternships] = useState([]); 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [applicantsDialogOpen, setApplicantsDialogOpen] = useState(false);

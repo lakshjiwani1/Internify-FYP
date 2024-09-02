@@ -197,6 +197,7 @@ const Applicants = () => {
                 <TableRow>
                   <TableCell>Internship</TableCell>
                   <TableCell>Status</TableCell>
+                  <TableCell>Email</TableCell> 
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -210,10 +211,10 @@ const Applicants = () => {
                           borderRadius: "4px",
                           backgroundColor:
                             internship.applicationStatus === "Accepted"
-                              ? "rgba(0, 128, 0, 0.2)" 
+                              ? "rgba(0, 128, 0, 0.2)"
                               : internship.applicationStatus === "Rejected"
-                              ? "rgba(255, 0, 0, 0.2)" 
-                              : "rgba(255, 255, 0, 0.2)", 
+                              ? "rgba(255, 0, 0, 0.2)"
+                              : "rgba(255, 255, 0, 0.2)",
                           color:
                             internship.applicationStatus === "Accepted"
                               ? "green"
@@ -226,6 +227,16 @@ const Applicants = () => {
                       >
                         {internship.applicationStatus}
                       </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outlined"
+                        onClick={() =>
+                          window.location.href = `mailto:${selectedApplicant.email}`
+                        }
+                      >
+                        Email
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
