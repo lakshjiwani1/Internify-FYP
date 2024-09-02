@@ -35,7 +35,9 @@ def is_student(user):
 # @csrf_exempt
 def view_all_internships(request):
     form = InternshipSearchForm()
-    internships = Internships.objects.filter(is_published=True).order_by('-created_at')
+    current_time = timezone.now()
+    # internships = Internships.objects.filter(is_published=True).order_by('-created_at')
+    internships = Internships.objects.filter(is_published=True, application_deadline__gte=current_time).order_by('-created_at')
     # number_of_applicants = count_applicants(internships)
     context = {'internships': internships}  # Initialize context with an empty list
     print(f"Request_Body: {request.body}")
@@ -49,27 +51,6 @@ def view_all_internships(request):
     context = {'internships': internships_data}
     print(f"Context: {context}")
     print(f"Json Response: {JsonResponse(context)}")
-    # if request.method == 'GET':
-    #     form = InternshipSearchForm(request.GET)
-    #     if form.is_valid():
-    #         search_by = request.GET.get('search_by', 'company_name')  # Default to searching by company name
-    #         query = request.GET.get('query', '')
-    #         internships_json = serialize('json', internships)
-    #         internships_data = json.loads(internships_json)
-
-    #         # Start with all published internships
-    #         internships = Internships.objects.filter(is_published=True).order_by('-created_at')
-    #         internships_list = [model_to_dict(internship) for internship in internships]
-    #         # Perform the search based on the selected option
-    #         if query:
-    #             if search_by == 'company_name':
-    #                 internships = internships.filter(company__name__icontains=query)
-    #             elif search_by == 'internship_name':
-    #                 internships = internships.filter(title__icontains=query)
-
-    #         context = {'query': query, 'internships': internships_data}
-
-    # return render(request, 'students/internship_list.html', context)
     return JsonResponse({
         'internships': internships_data,
         # 'number_of_applicants':number_of_applicants
@@ -227,46 +208,6 @@ def count_applicants(request, internships_id):
     }
 
     return JsonResponse(internship_data)
-
-# def track_application(request):
-#     auth_header = request.headers.get('Authorization')
-#     if not auth_header or not auth_header.startswith('Bearer '):
-#         return JsonResponse({'error': 'Authorization header missing or invalid'}, status=401)
-#     token = auth_header.split(' ')[1]
-#     try:
-#         decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-#         user_id = decoded_token.get('user_id')
-#     except jwt.ExpiredSignatureError:
-#         return JsonResponse({'error': 'Token has expired'}, status=401)
-#     except jwt.InvalidTokenError:
-#         return JsonResponse({'error': 'Invalid token'}, status=401)
-#     print(f"User Id Line 232: {user_id}")
-#     User = get_user_model()
-#     print("getting user")
-#     user = User.objects.get(pk=user_id)
-#     print(f"User: {user}")
-#     print("Getting student")
-#     student = Student.objects.get(user=user)
-#     print(f"Student: {student}")
-
-#     # Filter internships where student_id matches the logged-in user's student
-#     internships = Internships.objects.filter(application__student=student).distinct()
-#     # context = internships
-#     internships_json = serialize('json', internships)
-#     print(f"Internships Json: {internships_json}")
-#     print(f"Internships: {internships}")
-#     context = {'internships': internships}
-#     internships_data = json.loads(internships_json)
-#     print(f"Internships data: {internships_data}")
-
-#     context = {'internships': internships_data}
-#     print(f"Context: {context}")
-
-#     return JsonResponse(context)
-    # return render(request, 'your_template.html', context)
-    # else:
-    #     # Redirect to login page if not authenticated
-    #     return redirect('login')
 
 
 def track_application(request):

@@ -47,7 +47,7 @@ def view_articles(request):
     user_id = request.user.id
 
     # Filter articles by the logged-in user's ID
-    articles = Article.objects.filter(author__id=user_id).values()
+    articles = Article.objects.filter(author__id=user_id).order_by('-publication_date').values()
 
     # Return a Response object with the article data
     return Response({'articles': list(articles)})
@@ -55,8 +55,9 @@ def view_articles(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def view_all_articles(request):
-    articles = Article.objects.filter().values()
+    articles = Article.objects.all().order_by('-publication_date').values()
     return Response({'articles': list(articles)})
+
 
 
 @csrf_exempt
