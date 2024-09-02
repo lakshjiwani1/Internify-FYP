@@ -10,6 +10,8 @@ import {
   useMediaQuery,
   Backdrop,
   CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import img from "../../assets/login img.jpeg";
 import { Link, useNavigate } from "react-router-dom";
@@ -21,6 +23,8 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState("");
 
   const formik = useFormik({
     initialValues: {
@@ -33,10 +37,10 @@ const LoginForm = () => {
     }),
     onSubmit: async (values) => {
       try {
-        setLoading(true); // Start loading
+        setLoading(true); 
         console.log("Form Submitted", values);
 
-        // Perform Login
+        
         const loginResponse = await axios.post(
           "http://127.0.0.1:8000/signin/",
           values,
@@ -77,16 +81,24 @@ const LoginForm = () => {
           }
         } else {
           console.error("Login failed:", loginResponse.data.error);
+          setAlertMessage("ID or Password are incorrect.");
+          setAlertOpen(true);
         }
       } catch (error) {
         console.error("API Error:", error);
+        setAlertMessage("ID or Password are incorrect.");
+        setAlertOpen(true);
       } finally {
-        setLoading(false); // Stop loading
+        setLoading(false); 
       }
     },
   });
 
   const isMobile = useMediaQuery("(max-width:600px)");
+
+  const handleAlertClose = () => {
+    setAlertOpen(false);
+  };
 
   return (
     <Flexbox
@@ -169,13 +181,6 @@ const LoginForm = () => {
                 />
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="body1" sx={{ marginTop: 1 }}>
-                  <Link to="/signup" sx={{ color: "#F53855" }}>
-                    Forgot Password?
-                  </Link>
-                </Typography>
-              </Grid>
-              <Grid item xs={12}>
                 <Button
                   type="submit"
                   variant="contained"
@@ -203,6 +208,17 @@ const LoginForm = () => {
       >
         <CircularProgress color="inherit" />
       </Backdrop>
+
+      <Snackbar
+        open={alertOpen}
+        autoHideDuration={6000}
+        onClose={handleAlertClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert onClose={handleAlertClose} severity="error">
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </Flexbox>
   );
 };

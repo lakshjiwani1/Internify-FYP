@@ -1,13 +1,14 @@
-import React from "react";
-import { useFormik, Field } from "formik";
+import React, { useState } from "react";
+import { useFormik } from "formik";
 import * as Yup from "yup";
 import {
   Box,
   Button,
   Grid,
-  TextField,
   Typography,
   useMediaQuery,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material";
 import img from "../../assets/signup img.jpeg";
 import { Link, useNavigate } from "react-router-dom";
@@ -16,6 +17,7 @@ import axios from "axios";
 
 const SignupForm = () => {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false); 
 
   const formik = useFormik({
     initialValues: {
@@ -26,34 +28,6 @@ const SignupForm = () => {
       password1: "",
       password2: "",
       user_type: "1",
-    },
-    onSubmit: async (values) => {
-      console.log(values.username)
-      console.log(values.password1);
-      console.log(values.password2);
-
-      try {
-        const response = await axios.post(
-          "http://127.0.0.1:8000/signup/",
-          values, {
-            headers: {
-              'Content-Type' : 'application/json'
-            }
-          }
-        );
-        console.log("Signup Response:", response.data);
-
-        if (response.status === 201) {
-          console.log("Signup successful");
-          navigate("/login");
-        } else {
-          console.error("Signup failed:", response.data.error);
-          console.log("status: ", response.status);
-          console.log("values: ", values);
-        }
-      } catch (error) {
-        console.error("API Error:", error);
-      }
     },
     validationSchema: Yup.object({
       first_name: Yup.string().required("Required"),
@@ -67,6 +41,31 @@ const SignupForm = () => {
         .oneOf([Yup.ref("password1"), null], "Passwords must match")
         .required("Required"),
     }),
+    onSubmit: async (values) => {
+      try {
+        setLoading(true); 
+        const response = await axios.post(
+          "http://127.0.0.1:8000/signup/",
+          values,
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (response.status === 201) {
+          console.log("Signup successful");
+          navigate("/login");
+        } else {
+          console.error("Signup failed:", response.data.error);
+        }
+      } catch (error) {
+        console.error("API Error:", error);
+      } finally {
+        setLoading(false); 
+      }
+    },
   });
 
   const isMobile = useMediaQuery("(max-width:600px)");
@@ -79,6 +78,7 @@ const SignupForm = () => {
         padding: "2rem",
         marginLeft: isMobile ? "0rem" : "6rem",
         marginBottom: 10,
+        position: "relative", 
       }}
     >
       <Typography
@@ -96,10 +96,10 @@ const SignupForm = () => {
                 variant="body1"
                 sx={{
                   width: isMobile ? "100%" : "20rem",
-                  marginBottom: "1rem", 
+                  marginBottom: "1rem",
                 }}
               >
-                If you already have an account registered You can{" "}
+                If you already have an account registered, you can{" "}
                 <Link to="/login" sx={{ color: "#F53855" }}>
                   Log In here.
                 </Link>
@@ -115,10 +115,11 @@ const SignupForm = () => {
                   value={formik.values.first_name}
                   onChange={formik.handleChange}
                   error={
-                    formik.touched.firstName && Boolean(formik.errors.firstName)
+                    formik.touched.first_name &&
+                    Boolean(formik.errors.first_name)
                   }
                   helperText={
-                    formik.touched.firstName && formik.errors.firstName
+                    formik.touched.first_name && formik.errors.first_name
                   }
                 />
               </Grid>
@@ -131,7 +132,8 @@ const SignupForm = () => {
                   value={formik.values.last_name}
                   onChange={formik.handleChange}
                   error={
-                    formik.touched.last_name && Boolean(formik.errors.last_name)
+                    formik.touched.last_name &&
+                    Boolean(formik.errors.last_name)
                   }
                   helperText={
                     formik.touched.last_name && formik.errors.last_name
@@ -174,7 +176,8 @@ const SignupForm = () => {
                   value={formik.values.password1}
                   onChange={formik.handleChange}
                   error={
-                    formik.touched.password1 && Boolean(formik.errors.password1)
+                    formik.touched.password1 &&
+                    Boolean(formik.errors.password1)
                   }
                   helperText={
                     formik.touched.password1 && formik.errors.password1
@@ -191,7 +194,8 @@ const SignupForm = () => {
                   value={formik.values.password2}
                   onChange={formik.handleChange}
                   error={
-                    formik.touched.password2 && Boolean(formik.errors.password2)
+                    formik.touched.password2 &&
+                    Boolean(formik.errors.password2)
                   }
                   helperText={
                     formik.touched.password2 && formik.errors.password2
@@ -233,6 +237,13 @@ const SignupForm = () => {
           )}
         </Grid>
       </form>
+
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Flexbox>
   );
 };

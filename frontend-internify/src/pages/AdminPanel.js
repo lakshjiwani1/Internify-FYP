@@ -1,5 +1,3 @@
-// src/AdminPanel.js
-
 import React from 'react';
 import { Box, Typography, Paper, List, ListItem, ListItemText, Divider } from '@mui/material';
 import { Add, Edit } from '@mui/icons-material';

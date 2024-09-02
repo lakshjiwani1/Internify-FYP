@@ -63,13 +63,13 @@ const MyApplications = () => {
   const getStatusColor = (status) => {
     switch (status.toLowerCase()) {
       case 'pending':
-        return 'rgba(255, 215, 0, 0.3)'; // Yellow with 30% opacity
+        return 'rgba(255, 215, 0, 0.3)'; 
       case 'accepted':
-        return 'rgba(76, 175, 80, 0.3)'; // Green with 30% opacity
+        return 'rgba(76, 175, 80, 0.3)'; 
       case 'rejected':
-        return 'rgba(244, 67, 54, 0.3)'; // Red with 30% opacity
+        return 'rgba(244, 67, 54, 0.3)'; 
       default:
-        return 'rgba(128, 128, 128, 0.3)'; // Grey with 30% opacity for unknown statuses
+        return 'rgba(128, 128, 128, 0.3)'; 
     }
   };
 
