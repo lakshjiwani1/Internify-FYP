@@ -1,5 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Typography, TextField, Button, Card, CardContent, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, CircularProgress } from '@mui/material';
+import {
+  Container,
+  Grid,
+  Typography,
+  TextField,
+  Button,
+  Card,
+  CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  CircularProgress,
+} from '@mui/material';
 import { Search, Add } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -14,9 +28,8 @@ const ArticlesPage = () => {
   const [token, setToken] = useState('');
 
   useEffect(() => {
-    // Function to fetch token from local storage
     const fetchToken = () => {
-      const storedToken = localStorage.getItem('access_token'); // Token key from LoginForm
+      const storedToken = localStorage.getItem('access_token');
       setToken(storedToken);
     };
 
@@ -28,8 +41,8 @@ const ArticlesPage = () => {
       try {
         const response = await axios.get('http://127.0.0.1:8000/view_all_articles/', {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            Authorization: `Bearer ${token}`,
+          },
         });
         console.log('API response:', response.data);
 
@@ -47,13 +60,13 @@ const ArticlesPage = () => {
       }
     };
 
-    if (token) { // Ensure token is available before making request
+    if (token) {
       fetchArticles();
     }
   }, [token]);
 
   const handleSearch = () => {
-    const filtered = articles.filter(article =>
+    const filtered = articles.filter((article) =>
       article.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredArticles(filtered);
@@ -69,9 +82,22 @@ const ArticlesPage = () => {
     setSelectedArticle(null);
   };
 
+  const formatContent = (content) => {
+    if (!content) return null; 
+
+    return content.split('\n').map((paragraph, index) => (
+      <Typography key={index} paragraph>
+        {paragraph}
+      </Typography>
+    ));
+  };
+
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ marginTop: '2rem', marginBottom: '2rem', width: '70%', textAlign: 'center' }}>
+      <Container
+        maxWidth="md"
+        sx={{ marginTop: '2rem', marginBottom: '2rem', width: '70%', textAlign: 'center' }}
+      >
         <CircularProgress />
       </Container>
     );
@@ -106,23 +132,42 @@ const ArticlesPage = () => {
           </Button>
         </Grid>
         <Grid item xs={12}>
-          <Typography variant="h5" sx={{ textAlign: 'center', marginBottom: '2rem' }}>Articles</Typography>
+          <Typography variant="h5" sx={{ textAlign: 'center', marginBottom: '2rem' }}>
+            Articles
+          </Typography>
           <Grid container spacing={2}>
             {filteredArticles.length > 0 ? (
               filteredArticles.map((article) => (
                 <Grid item xs={12} md={6} key={article.id}>
-                  <Card onClick={() => handleClickOpen(article)} sx={{ cursor: 'pointer', height: '150px', overflow: 'hidden' }}>
+                  <Card
+                    onClick={() => handleClickOpen(article)}
+                    sx={{ cursor: 'pointer', height: '150px', overflow: 'hidden' }}
+                  >
                     <CardContent>
-                      <Typography variant="h6" noWrap>{article.title}</Typography>
-                      <Typography variant="body2" sx={{ marginBottom: '1rem', height: '60px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {article.content.length > 100 ? article.content.substring(0, 100) + '...' : article.content}
+                      <Typography variant="h6" noWrap>
+                        {article.title}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          marginBottom: '1rem',
+                          height: '60px',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {article.content.length > 100
+                          ? article.content.substring(0, 100) + '...'
+                          : article.content}
                       </Typography>
                     </CardContent>
                   </Card>
                 </Grid>
               ))
             ) : (
-              <Typography variant="body1" sx={{ textAlign: 'center'}}>No articles available.</Typography>
+              <Typography variant="body1" sx={{ textAlign: 'center' }}>
+                No articles available.
+              </Typography>
             )}
           </Grid>
         </Grid>
@@ -131,9 +176,7 @@ const ArticlesPage = () => {
       <Dialog open={dialogOpen} onClose={handleClose}>
         <DialogTitle>{selectedArticle?.title}</DialogTitle>
         <DialogContent>
-          <DialogContentText>
-            {selectedArticle?.content}
-          </DialogContentText>
+          <DialogContentText>{formatContent(selectedArticle?.content)}</DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose} color="primary">
